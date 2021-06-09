@@ -1,0 +1,40 @@
+\documentclass[UTF8]{ctexart}
+\usepackage[colorlinks]{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\title{\normalsize\underline{编译原理(A)大作业}\\\Large 算符优先分析表和卷积优化}
+\author{李子龙 518070910095}
+\begin{document}
+    \maketitle
+    \tableofcontents
+    \clearpage
+
+\part{算符优先分析表}
+\subsection*{程序输出}
+% \input{output1.txt}
+% \input{output2.txt}
+
+
+
+\part{卷积优化}
+\subsection*{优化结果}
+\begin{table}[H]
+    \begin{tabular}{m{17em}rrc}
+        \toprule
+        输入大小和输出大小 & 优化前 & 优化后 & 提升效率 \\
+        \midrule
+        \ttfamily
+        n, ic, ih, iw = 1, 3, 32, 32~~~~~
+        oc, kh, kw = 32, 3, 3
+        & & & \\
+        \hline
+        \ttfamily
+        n, ic, ih, iw = 100, 512, 32, 32
+        oc, kh, kw = 1024, 3, 3
+        & & & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\end{document}
