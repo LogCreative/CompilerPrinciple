@@ -3,3 +3,7 @@
 *.out
 *.synctex.gz
 *.toc
+*.bib.bak
+*.bib.sav
+target/
+*.lock

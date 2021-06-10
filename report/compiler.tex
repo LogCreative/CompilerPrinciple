@@ -1,10 +1,14 @@
 \documentclass[UTF8]{ctexart}
+\usepackage{amsmath,amssymb}
+\newtheorem{definition}{定义}
 \usepackage[colorlinks]{hyperref}
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{float}
+\bibliographystyle{IEEEtran}
 \title{\normalsize\underline{编译原理(A)大作业}\\\Large 算符优先分析表和卷积优化}
 \author{李子龙 518070910095}
+
 \begin{document}
     \maketitle
     \tableofcontents
@@ -15,7 +19,52 @@
 % \input{output1.txt}
 % \input{output2.txt}
 
+\section{题目分析}
 
+首先需要声明在算符优先语法中算符优先级的定义\cite{Floyd1963}。
+\begin{definition}\label{def:op}
+    对于两个终结符 $T_1$ 和 $T_2$，有下面的算符优先级定义（其中 $U_1$ 是非终结符）
+    \begin{enumerate}
+        \item $T_1=T_2$ 如果存在产生式 $U\rightarrow xT_1T_2y$ 或 $U\rightarrow xT_1 U_1 T_2 y$。
+        \item $T_1<T_2$ 如果存在产生式 $U\rightarrow xT_1U_1y$ 而且存在一个推导 $U_1\Rightarrow z$ 使得 $T_2$ 是 $z$ 的最左终结符。
+        \item $T_1>T_2$ 如果存在产生式 $U\rightarrow xU_1T_2y$ 而且存在一个推导 $U_1\Rightarrow z$ 使得 $T_1$ 是 $z$ 的最右终结符。
+    \end{enumerate}
+\end{definition}
+
+本部分即针对一个上下文无关文法，输出算符优先分析表。如果文法是有二义性的，将会报错。如果两个终结符之间没有上述三个关系的其中一个，将会留空，意为没有优先关系。
+
+根据定义 \ref{def:op}，可以对符号构造下面两个集合以判断情况 2 和 3：
+
+\begin{definition}\label{def:vt}
+    假设 $V_T$ 是该文法终结符号对应的集合，$V_N$ 是该文法非终结符号对应的集合。对符号 $U_1$ 定义下面两个集合：
+    \begin{align}
+        \textit{FIRSTVT}(U_1) &= \{T|(U_1\Rightarrow Ty \vee U_1\Rightarrow U_2Ty)\land T\in V_T\land U_2\in V_N\}  \\
+        \textit{LASTVT}(U_1) &= \{T|(U_1\Rightarrow xT \vee U_1\Rightarrow xTU_2)\land T\in V_T\land U_2\in V_N\}
+    \end{align}
+\end{definition}
+
+除了上面的定义方法，对于这样的集合，还有这样的性质：
+\begin{align}
+    (U_1\Rightarrow U_2y) &\Rightarrow \textit{FIRSTVT}(U_2)\in \textit{FIRSTVT}(U_1) \\
+    (U_1\Rightarrow xU_2) &\Rightarrow \textit{LASTVT}(U_2)\in \textit{LASTVT}(U_1)
+\end{align}
+
+这样定义 \ref{def:op} 就有了如下的等价定义：
+\begin{definition}\label{def:opn}
+    对于两个终结符 $T_1$ 和 $T_2$，有下面的算符优先级定义（其中 $U_1$ 是非终结符）
+    \begin{enumerate}
+        \item 如果找到了这样的产生式右部 $T_1T_2$ 或 $T_1U_1T_2$，那么 $T_1=T_2$。
+        \item 如果找到了这样的产生式右部 $T_1U_1$ 且 $T_2\in\textit{FIRSTVT}(U_1)$，那么 $T_1<T_2$。
+        \item 如果找到了这样的产生式右部 $U_1T_2$ 且 $T_1\in\textit{LASTVT}(U_1)$，那么 $T_1>T_2$。
+    \end{enumerate}
+\end{definition}
+
+\section{算法实现}
+
+
+
+%% 二义性
+% 如果一个文法是无二义性的，那么该文法的每个右句型都有且只有一个句柄。
 
 \part{卷积优化}
 \subsection*{优化结果}
@@ -36,5 +85,7 @@
         \bottomrule
     \end{tabular}
 \end{table}
+
+\bibliography{ref}
 
 \end{document}
