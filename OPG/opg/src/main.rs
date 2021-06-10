@@ -16,12 +16,16 @@ impl Opg {
         let mut prod:Vec<Production> = Vec::new();
         for line in _contents.lines(){
             let ps:Vec<_> = line.split("->").collect();
-            let vs:Vec<_> = ps[1].split_whitespace().collect();
-            prod.push(Production {
-                left: ps[0].trim().to_string(),
-                right: vs.iter().map(|s| s.clone().to_string()).collect()
-            });
+            let rs:Vec<_> = ps[1].split("|").collect();
+            for rsp in rs {
+                let vs:Vec<_> = rsp.split_whitespace().collect();
+                prod.push(Production {
+                    left: ps[0].trim().to_string(),
+                    right: vs.iter().map(|s| s.to_string()).collect()
+                });
+            }   
         }
+
         Opg{
             contents: _contents,
             productions: prod
