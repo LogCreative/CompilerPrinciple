@@ -3,43 +3,31 @@ use std::fs;
 
 struct Production {
     left: String,
-    right: Vec<String>
+    right: Vec<String>,
 }
 
-struct Opg {
-    contents: String,
-    productions: Vec<Production>
+fn gen_productions(contents: &String) -> Vec<Production> {
+    let mut p: Vec<Production> = Vec::new();
+    for line in contents.lines() {
+        let ps: Vec<_> = line.split("->").collect();
+        let rs: Vec<_> = ps[1].split("|").collect();
+        for rsp in rs {
+            let vs: Vec<_> = rsp.split_whitespace().collect();
+            p.push(Production {
+                left: ps[0].trim().to_string(),
+                right: vs.iter().map(|s| s.to_string()).collect(),
+            });
+        }
+    }
+    p
 }
 
-impl Opg {
-    pub fn new(_contents: String) -> Opg {
-        let mut prod:Vec<Production> = Vec::new();
-        for line in _contents.lines(){
-            let ps:Vec<_> = line.split("->").collect();
-            let rs:Vec<_> = ps[1].split("|").collect();
-            for rsp in rs {
-                let vs:Vec<_> = rsp.split_whitespace().collect();
-                prod.push(Production {
-                    left: ps[0].trim().to_string(),
-                    right: vs.iter().map(|s| s.to_string()).collect()
-                });
-            }   
-        }
-
-        Opg{
-            contents: _contents,
-            productions: prod
-        }
+fn opg_generate(contents: &String) -> String {
+    let productions: Vec<Production> = gen_productions(&contents);
+    for prod in productions {
+        println!("{}->{:?}", prod.left, prod.right);
     }
-
-    pub fn generate(&self) -> String {
-        let prod = &self.productions;
-        for prod in prod{
-            println!("{}->{:?}",prod.left,prod.right);
-        }
-        let table = self.contents.clone();
-        table
-    }
+    contents.clone()
 }
 
 fn main() {
@@ -47,11 +35,9 @@ fn main() {
     // File for input
     let filename = &args[1];
     // Contents of the file
-    let _contents = fs::read_to_string(filename).expect("No such file."); 
-    // Define the struct
-    let opg = Opg::new(_contents);
+    let contents = fs::read_to_string(filename).expect("No such file.");
     // Get the table
-    let table = opg.generate();
+    let table = opg_generate(&contents);
     // Output the table
     println!("{}", table);
 }
