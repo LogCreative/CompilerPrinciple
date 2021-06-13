@@ -14,36 +14,48 @@ struct Production {
     right: Vec<String>,
 }
 
+fn compose_elements(mono: &HashMap<String, HashSet<String>>, con: &HashMap<String, Vec<String>>) -> HashMap<String, HashSet<String>> {
+    // Eliminate loop on 
+    // the containing recursive tree
+    // by using division method.
+    // the element on the loop
+    // shares the same set.
+    // let mut division = 
+
+    // Compose all the sets
+    // by recursing.
+    let mut map: HashMap<String, HashSet<String>> = HashMap::new();
+    map
+}
+
 ///
 /// Generate FIRSTVT set for
 /// every non-terminals.
 ///
 fn gen_firstvt(productions: &Vec<Production>, nts: &HashSet<String>) -> HashMap<String, HashSet<String>>{
-    let mut firstvtmap: HashMap<String, HashSet<String>> = HashMap::new();
+    let mut firstvtmono: HashMap<String, HashSet<String>> = HashMap::new();
     let mut firstvtcon: HashMap<String, Vec<String>> = HashMap::new();
 
     // Find mono terminal and
     // record the containing part
     for p in productions {
-        if !nts.contains(p.right.first().unwrap()) {
-            // Case 1: U => Ty
-            let vts = firstvtmap.entry(p.left.to_string()).or_insert(HashSet::new());
-            vts.insert(p.right.first().unwrap().to_string());
+        if nts.contains(p.right.first().unwrap()) {
+            // Case 1: U => U_1y
+            let ntc = firstvtcon.entry(p.left.to_string()).or_insert(Vec::new());
+            ntc.push(p.right.first().unwrap().to_string());
+            // Case 1*: U => U_1Ty
+            if p.right.len()>1 && !nts.contains(&p.right[1]) {
+                let vts = firstvtmono.entry(p.left.to_string()).or_insert(HashSet::new());
+                vts.insert(p.right[1].clone());
+            }
         } else {
-            // Case 2: U => U_1Ty
-            
+            // Case 2: U => Ty
+            let vts = firstvtmono.entry(p.left.to_string()).or_insert(HashSet::new());
+            vts.insert(p.right.first().unwrap().to_string());
         }
     }
-
-    // Eliminate loop on 
-    // the containing recursive tree
-    // DFS, the element on the loop
-    // shares the same set.
-
-    // Compose all the sets
-    // by recursing.
-
-    firstvtmap
+    let firstvt = compose_elements(&firstvtmono, &firstvtcon);
+    firstvt
 }
 
 ///
@@ -51,8 +63,29 @@ fn gen_firstvt(productions: &Vec<Production>, nts: &HashSet<String>) -> HashMap<
 /// every non-terminals.
 ///
 fn gen_lastvt(productions: &Vec<Production>, nts: &HashSet<String>) -> HashMap<String, HashSet<String>>{
-    let mut lastvtmap: HashMap<String, HashSet<String>> = HashMap::new();
-    lastvtmap
+    let mut lastvtmono: HashMap<String, HashSet<String>> = HashMap::new();
+    let mut lastvtcon: HashMap<String, Vec<String>> = HashMap::new();
+
+    // Find mono terminal and
+    // record the containing part
+    for p in productions {
+        if nts.contains(p.right.last().unwrap()) {
+            // Case 1: U => xU_1
+            let ntc = lastvtcon.entry(p.left.to_string()).or_insert(Vec::new());
+            ntc.push(p.right.last().unwrap().to_string());
+            // Case 1*: U => xTU_1
+            if p.right.len()>1 && !nts.contains(&p.right[p.right.len()-2]) {
+                let vts = lastvtmono.entry(p.left.to_string()).or_insert(HashSet::new());
+                vts.insert(p.right[p.right.len()-2].clone());
+            }
+        } else {
+            // Case 2: U => xT
+            let vts = lastvtmono.entry(p.left.to_string()).or_insert(HashSet::new());
+            vts.insert(p.right.last().unwrap().to_string());
+        }
+    }
+    let lastvt = compose_elements(&lastvtmono, &lastvtcon);
+    lastvt
 }
 
 
@@ -94,21 +127,29 @@ fn get_non_terminals(productions: &Vec<Production>) -> HashSet<String> {
 ///
 /// Find the equal operators
 ///
-fn find_eq(table: &mut HashMap<(String,String),RELATION>, productions: &Vec<Production>) {
+fn find_eq(
+    table: &mut HashMap<(String,String),RELATION>, 
+    productions: &Vec<Production>) {
 
 }
 
 ///
 /// Find the less relations
 ///
-fn find_less(table: &mut HashMap<(String,String),RELATION>, productions: &Vec<Production>, firstvt: &HashMap<String,HashSet<String>>) {
+fn find_less(
+    table: &mut HashMap<(String,String),RELATION>,
+    productions: &Vec<Production>, 
+    firstvt: &HashMap<String,HashSet<String>>) {
 
 }
 
 ///
 /// Find the greater relations
 ///
-fn find_greater(table: &mut HashMap<(String,String),RELATION>, productions: &Vec<Production>, lastvt: &HashMap<String,HashSet<String>>) {
+fn find_greater(
+    table: &mut HashMap<(String,String),RELATION>, 
+    productions: &Vec<Production>, 
+    lastvt: &HashMap<String,HashSet<String>>) {
 
 }
 
