@@ -1,12 +1,12 @@
-use std::collections::HashSet;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::env;
 use std::fs;
 
 enum RELATION {
     EQUAL,
     LESS,
-    GREATER
+    GREATER,
 }
 
 struct Production {
@@ -14,13 +14,76 @@ struct Production {
     right: Vec<String>,
 }
 
-fn compose_elements(mono: &HashMap<String, HashSet<String>>, con: &HashMap<String, Vec<String>>) -> HashMap<String, HashSet<String>> {
-    // Eliminate loop on 
+struct Dfs {
+    con: HashMap<String, HashSet<String>>,
+    visited: HashSet<String>,
+    path: Vec<String>,
+    element: HashMap<String, i64>,
+    tree: HashMap<i64, HashSet<String>>
+}
+
+impl Dfs {
+    fn new(con: HashMap<String, HashSet<String>>) -> Dfs {
+        Dfs{
+            con: con,
+            visited: HashSet::new(),
+            path: Vec::new(),
+            element: HashMap::new(),
+            tree: HashMap::new()
+        }
+    }
+}
+
+///
+/// DFS(Depth-First Search) 
+/// on the structure of
+/// Dfs
+///
+fn dfs(dfs_div: &mut Dfs, node: &String){
+    if dfs_div.path.contains(&node) {
+        // a looped path
+        // DFS in the path list -- all elements to that looped element is the same.
+        // DFS if loop, return and do the next DFS action.
+        loop {
+            // never run out of elements.
+            let back = dfs_div.path.pop().unwrap();
+            // add to the same category
+            
+
+            if back.eq(node) {
+                // pop up complete
+                break;
+            }
+        }
+    } else {
+        // add to path
+        dfs_div.path.push(node.clone());
+    }
+    // DFS post visited -- do not visit again
+    if !dfs_div.visited.contains(node){
+        for child in dfs_div.con[node].clone(){
+            dfs(dfs_div, &child);
+        }
+        // post visited
+        dfs_div.visited.insert(node.clone());
+    }
+}
+
+fn compose_elements(
+    mono: &HashMap<String, HashSet<String>>,
+    con: &HashMap<String, HashSet<String>>,
+) -> HashMap<String, HashSet<String>> {
+    // Eliminate loop on
     // the containing recursive tree
     // by using division method.
-    // the element on the loop
+    // DFS, the element on the loop
     // shares the same set.
-    // let mut division = 
+    println!("{:?}", mono);
+
+    let mut dfs_div = Dfs::new(con.clone());
+    for nt in con.keys(){
+        dfs(&mut dfs_div, nt);
+    }
 
     // Compose all the sets
     // by recursing.
@@ -32,25 +95,34 @@ fn compose_elements(mono: &HashMap<String, HashSet<String>>, con: &HashMap<Strin
 /// Generate FIRSTVT set for
 /// every non-terminals.
 ///
-fn gen_firstvt(productions: &Vec<Production>, nts: &HashSet<String>) -> HashMap<String, HashSet<String>>{
+fn gen_firstvt(
+    productions: &Vec<Production>,
+    nts: &HashSet<String>,
+) -> HashMap<String, HashSet<String>> {
     let mut firstvtmono: HashMap<String, HashSet<String>> = HashMap::new();
-    let mut firstvtcon: HashMap<String, Vec<String>> = HashMap::new();
+    let mut firstvtcon: HashMap<String, HashSet<String>> = HashMap::new();
 
     // Find mono terminal and
     // record the containing part
     for p in productions {
         if nts.contains(p.right.first().unwrap()) {
             // Case 1: U => U_1y
-            let ntc = firstvtcon.entry(p.left.to_string()).or_insert(Vec::new());
-            ntc.push(p.right.first().unwrap().to_string());
+            let ntc = firstvtcon
+                .entry(p.left.to_string())
+                .or_insert(HashSet::new());
+            ntc.insert(p.right.first().unwrap().to_string());
             // Case 1*: U => U_1Ty
-            if p.right.len()>1 && !nts.contains(&p.right[1]) {
-                let vts = firstvtmono.entry(p.left.to_string()).or_insert(HashSet::new());
+            if p.right.len() > 1 && !nts.contains(&p.right[1]) {
+                let vts = firstvtmono
+                    .entry(p.left.to_string())
+                    .or_insert(HashSet::new());
                 vts.insert(p.right[1].clone());
             }
         } else {
             // Case 2: U => Ty
-            let vts = firstvtmono.entry(p.left.to_string()).or_insert(HashSet::new());
+            let vts = firstvtmono
+                .entry(p.left.to_string())
+                .or_insert(HashSet::new());
             vts.insert(p.right.first().unwrap().to_string());
         }
     }
@@ -62,25 +134,34 @@ fn gen_firstvt(productions: &Vec<Production>, nts: &HashSet<String>) -> HashMap<
 /// Generate LASTVT set for
 /// every non-terminals.
 ///
-fn gen_lastvt(productions: &Vec<Production>, nts: &HashSet<String>) -> HashMap<String, HashSet<String>>{
+fn gen_lastvt(
+    productions: &Vec<Production>,
+    nts: &HashSet<String>,
+) -> HashMap<String, HashSet<String>> {
     let mut lastvtmono: HashMap<String, HashSet<String>> = HashMap::new();
-    let mut lastvtcon: HashMap<String, Vec<String>> = HashMap::new();
+    let mut lastvtcon: HashMap<String, HashSet<String>> = HashMap::new();
 
     // Find mono terminal and
     // record the containing part
     for p in productions {
         if nts.contains(p.right.last().unwrap()) {
             // Case 1: U => xU_1
-            let ntc = lastvtcon.entry(p.left.to_string()).or_insert(Vec::new());
-            ntc.push(p.right.last().unwrap().to_string());
+            let ntc = lastvtcon
+                .entry(p.left.to_string())
+                .or_insert(HashSet::new());
+            ntc.insert(p.right.last().unwrap().to_string());
             // Case 1*: U => xTU_1
-            if p.right.len()>1 && !nts.contains(&p.right[p.right.len()-2]) {
-                let vts = lastvtmono.entry(p.left.to_string()).or_insert(HashSet::new());
-                vts.insert(p.right[p.right.len()-2].clone());
+            if p.right.len() > 1 && !nts.contains(&p.right[p.right.len() - 2]) {
+                let vts = lastvtmono
+                    .entry(p.left.to_string())
+                    .or_insert(HashSet::new());
+                vts.insert(p.right[p.right.len() - 2].clone());
             }
         } else {
             // Case 2: U => xT
-            let vts = lastvtmono.entry(p.left.to_string()).or_insert(HashSet::new());
+            let vts = lastvtmono
+                .entry(p.left.to_string())
+                .or_insert(HashSet::new());
             vts.insert(p.right.last().unwrap().to_string());
         }
     }
@@ -88,9 +169,8 @@ fn gen_lastvt(productions: &Vec<Production>, nts: &HashSet<String>) -> HashMap<S
     lastvt
 }
 
-
 ///
-/// Generate production list for 
+/// Generate production list for
 /// the grammar contents.
 ///
 fn gen_productions(contents: &String) -> Vec<Production> {
@@ -111,7 +191,7 @@ fn gen_productions(contents: &String) -> Vec<Production> {
     let startnt = p[0].left.clone();
     p.push(Production {
         left: startnt.to_string(),
-        right: vec!["$".to_string(), startnt, "$".to_string()]
+        right: vec!["$".to_string(), startnt, "$".to_string()],
     });
     p
 }
@@ -127,32 +207,27 @@ fn get_non_terminals(productions: &Vec<Production>) -> HashSet<String> {
 ///
 /// Find the equal operators
 ///
-fn find_eq(
-    table: &mut HashMap<(String,String),RELATION>, 
-    productions: &Vec<Production>) {
-
-}
+fn find_eq(table: &mut HashMap<(String, String), RELATION>, productions: &Vec<Production>) {}
 
 ///
 /// Find the less relations
 ///
 fn find_less(
-    table: &mut HashMap<(String,String),RELATION>,
-    productions: &Vec<Production>, 
-    firstvt: &HashMap<String,HashSet<String>>) {
-
+    table: &mut HashMap<(String, String), RELATION>,
+    productions: &Vec<Production>,
+    firstvt: &HashMap<String, HashSet<String>>,
+) {
 }
 
 ///
 /// Find the greater relations
 ///
 fn find_greater(
-    table: &mut HashMap<(String,String),RELATION>, 
-    productions: &Vec<Production>, 
-    lastvt: &HashMap<String,HashSet<String>>) {
-
+    table: &mut HashMap<(String, String), RELATION>,
+    productions: &Vec<Production>,
+    lastvt: &HashMap<String, HashSet<String>>,
+) {
 }
-
 
 ///
 /// Generate Operator Precedence Table
@@ -163,7 +238,7 @@ fn opg_generate(contents: &String) -> String {
     let nts = get_non_terminals(&productions);
     let firstvt = gen_firstvt(&productions, &nts);
     let lastvt = gen_lastvt(&productions, &nts);
-    let mut table: HashMap<(String,String),RELATION> = HashMap::new();
+    let mut table: HashMap<(String, String), RELATION> = HashMap::new();
 
     // if there is conflict on operator precedence,
     // then the grammar is ambiguous.
@@ -172,9 +247,6 @@ fn opg_generate(contents: &String) -> String {
     find_less(&mut table, &productions, &firstvt);
     find_greater(&mut table, &productions, &lastvt);
 
-    for v in nts{
-        println!("{:?}",v);
-    }
     contents.clone()
 }
 
