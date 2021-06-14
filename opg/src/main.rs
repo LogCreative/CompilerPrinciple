@@ -39,7 +39,8 @@ impl Dfs {
 /// on the structure of
 /// Dfs
 ///
-fn dfs(dfs_div: &mut Dfs, node: &String){
+fn dfs(dfs_div: &mut Dfs, node: String){
+    println!("{:?},{}",dfs_div.visited, node);
     if dfs_div.path.contains(&node) {
         // a looped path
         // DFS in the path list -- all elements to that looped element is the same.
@@ -48,9 +49,9 @@ fn dfs(dfs_div: &mut Dfs, node: &String){
             // never run out of elements.
             let back = dfs_div.path.pop().unwrap();
             // add to the same category
-            
 
-            if back.eq(node) {
+
+            if back.eq(&node) {
                 // pop up complete
                 break;
             }
@@ -59,13 +60,15 @@ fn dfs(dfs_div: &mut Dfs, node: &String){
         // add to path
         dfs_div.path.push(node.clone());
     }
-    // DFS post visited -- do not visit again
-    if !dfs_div.visited.contains(node){
-        for child in dfs_div.con[node].clone(){
-            dfs(dfs_div, &child);
-        }
-        // post visited
+    // DFS pre visited -- do not visit again
+    if !dfs_div.visited.contains(&node){
+        // pre visited
         dfs_div.visited.insert(node.clone());
+        if dfs_div.con.contains_key(&node){
+            for child in dfs_div.con[&node].clone(){
+                dfs(dfs_div, child.clone());
+            }
+        }
     }
 }
 
@@ -82,7 +85,7 @@ fn compose_elements(
 
     let mut dfs_div = Dfs::new(con.clone());
     for nt in con.keys(){
-        dfs(&mut dfs_div, nt);
+        dfs(&mut dfs_div, nt.clone());
     }
 
     // Compose all the sets
