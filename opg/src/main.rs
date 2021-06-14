@@ -41,26 +41,27 @@ impl Dfs {
 /// Dfs
 ///
 fn dfs(dfs_div: &mut Dfs, node: String){
-    if dfs_div.path.contains(&node) {
-        // a looped path
-        // DFS in the path list -- all elements to that looped element is the same.
-        
-    } else {
-        // add to path
-        dfs_div.path.push(node.clone());
+    // stack-based DFS
+    // path is in the stack
+    let mut dfs_stack: Vec<String> = Vec::new();
+    dfs_stack.push(node);
+
+    while dfs_stack.len() > 0 {
+        let father = dfs_stack.pop().unwrap();
+        // path
+
         // DFS pre visited -- do not visit again
-        if !dfs_div.visited.contains(&node){
+        if !dfs_div.visited.contains(&father){
             // pre visited
-            dfs_div.visited.insert(node.clone());
-            if dfs_div.con.contains_key(&node){
-                for child in dfs_div.con[&node].clone(){
-                    dfs(dfs_div, child.clone());
+            dfs_div.visited.insert(father.clone());
+            if dfs_div.con.contains_key(&father){
+                for child in dfs_div.con[&father].clone(){
+                    dfs_stack.push(child);
                 }
             }
-            // post visited
-            dfs_div.path.pop();
         }
     }
+
 }
 
 fn compose_elements(
