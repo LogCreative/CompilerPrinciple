@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::env;
 use std::fs;
+use std::ops::Index;
 
 enum RELATION {
     EQUAL,
@@ -40,34 +41,24 @@ impl Dfs {
 /// Dfs
 ///
 fn dfs(dfs_div: &mut Dfs, node: String){
-    println!("{:?},{}",dfs_div.visited, node);
     if dfs_div.path.contains(&node) {
         // a looped path
         // DFS in the path list -- all elements to that looped element is the same.
-        // DFS if loop, return and do the next DFS action.
-        loop {
-            // never run out of elements.
-            let back = dfs_div.path.pop().unwrap();
-            // add to the same category
-
-
-            if back.eq(&node) {
-                // pop up complete
-                break;
-            }
-        }
+        
     } else {
         // add to path
         dfs_div.path.push(node.clone());
-    }
-    // DFS pre visited -- do not visit again
-    if !dfs_div.visited.contains(&node){
-        // pre visited
-        dfs_div.visited.insert(node.clone());
-        if dfs_div.con.contains_key(&node){
-            for child in dfs_div.con[&node].clone(){
-                dfs(dfs_div, child.clone());
+        // DFS pre visited -- do not visit again
+        if !dfs_div.visited.contains(&node){
+            // pre visited
+            dfs_div.visited.insert(node.clone());
+            if dfs_div.con.contains_key(&node){
+                for child in dfs_div.con[&node].clone(){
+                    dfs(dfs_div, child.clone());
+                }
             }
+            // post visited
+            dfs_div.path.pop();
         }
     }
 }
