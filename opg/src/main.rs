@@ -17,6 +17,7 @@ struct Production {
 struct Dfs {
     con: HashMap<String, HashSet<String>>,
     visited: HashSet<String>,
+    path: Vec<String>,
     element: HashMap<String, i64>,
     category: HashMap<i64, HashSet<String>>,
     top: i64,
@@ -27,6 +28,7 @@ impl Dfs {
         Dfs {
             con: con,
             visited: HashSet::new(),
+            path: Vec::new(),
             element: HashMap::new(),
             category: HashMap::new(),
             top: -1,
@@ -41,57 +43,57 @@ impl Dfs {
     fn dfs(&mut self, node: String) {
         // stack-based DFS
         // path is in the stack
-        let mut dfs_stack: Vec<String> = Vec::new();
-        dfs_stack.push(node);
 
-        while dfs_stack.len() > 0 {
-            let father = dfs_stack.pop().unwrap();
-
-            let mut first = dfs_stack.len();
-            for (pos, el) in dfs_stack.iter().enumerate() {
-                if el.eq(&father) {
-                    first = pos;
-                }
+        let mut first = self.path.len();
+        for (pos, el) in self.path.iter().enumerate() {
+            if el.eq(&node) {
+                first = pos;
             }
-
-            println!("{},{:?}",father,dfs_stack);
-            
-            self.top += 1;
-            let cate: i64 = self.top;
-            if first < dfs_stack.len() {
-                // if father is in the stack
-                // then there is a loop in the path
-                for i in first..dfs_stack.len() - 1 {
-                    if self.element.contains_key(&dfs_stack[i]) {
-                        let mono = self.category.entry(self.element[&dfs_stack[i]]).or_default();
-                        // move to the same new category.
-                        for el in mono.to_owned() {
-                            self.element.insert(el.clone(), cate);
-                        }
-                        // clear the original category.
-                        mono.clear();
+        }
+        
+        self.top += 1;
+        let cate: i64 = self.top;
+        if first < self.path.len() {
+            // there is a loop in the path
+            // println!("{},{:?}",node,self.path);
+            for i in first..self.path.len() {
+                // if self.element.contains_key(&self.path[i]) {
+                    // let mono = self.category.entry(self.element[&self.path[i]]).or_default();
+                    // move to the same new category.
+                    let oldnum = self.element[&self.path[i]];
+                    let oldcate = self.category[&oldnum].clone();
+                    let newcate = self.category.entry(cate).or_insert(HashSet::new());
+                    for el in oldcate {
+                        self.element.insert(el.clone(), cate);
+                        newcate.insert(el.clone());
                     }
-                }
-            } else if !self.element.contains_key(&father){
-                // otherwise, it is a new category if it is not recorded.
-                self.element.insert(father.clone(), cate);
-                let newcate = self.category.entry(cate).or_insert(HashSet::new());
-                newcate.insert(father.clone());
-            } else {
-                self.top -= 1;
+                    // clear the original category.
+                    // mono.clear();
+                    self.category.remove(&oldnum);
+                // }
             }
-            
-            // DFS pre visited -- do not visit again
-            // if it is a loop, it won't pass the condition test.
-            if !self.visited.contains(&father) {
-                // pre visited
-                self.visited.insert(father.clone());
-                if self.con.contains_key(&father) {
-                    for child in self.con[&father].clone() {
-                        dfs_stack.push(child);
-                    }
+        } else if !self.element.contains_key(&node){
+            // otherwise, it is a new category if it is not recorded.
+            self.element.insert(node.clone(), cate);
+            let newcate = self.category.entry(cate).or_insert(HashSet::new());
+            newcate.insert(node.clone());
+        } else {
+            self.top -= 1;
+        }
+        
+        // DFS pre visited -- do not visit again
+        // if it is a loop, it won't pass the condition test.
+        if !self.visited.contains(&node) {
+            // pre visited
+            self.visited.insert(node.clone());
+            self.path.push(node.clone());
+            if self.con.contains_key(&node) {
+                for child in self.con[&node].clone() {
+                    self.dfs(child);
                 }
             }
+            // post visited
+            self.path.pop();
         }
     }
 }
