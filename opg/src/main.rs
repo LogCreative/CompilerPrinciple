@@ -15,6 +15,7 @@ struct Production {
 }
 
 struct Dfs {
+    mono: HashMap<String, HashSet<String>>,
     con: HashMap<String, HashSet<String>>,
     visited: HashSet<String>,
     path: Vec<String>,
@@ -25,8 +26,9 @@ struct Dfs {
 }
 
 impl Dfs {
-    fn new(con: HashMap<String, HashSet<String>>) -> Dfs {
+    fn new(mono:HashMap<String, HashSet<String>>, con: HashMap<String, HashSet<String>>) -> Dfs {
         Dfs {
+            mono: mono,
             con: con,
             visited: HashSet::new(),
             path: Vec::new(),
@@ -37,18 +39,26 @@ impl Dfs {
         }
     }
 
-    fn dfs(&mut self, con: &HashMap<String, HashSet<String>>){
+    fn dfs(&mut self) -> HashMap<String, HashSet<String>> {
         // The first DFS: Merge category
-        for nt in con.keys() {
+        for nt in self.mono.to_owned().keys() {
             self.dfs_merge(nt.clone());
         }
         // The second DFS: Establish the connection between categories.
         self.visited.clear();
         self.path.clear();
-        for nt in con.keys(){
+        for nt in self.mono.to_owned().keys() {
             self.dfs_conn(nt.clone(), None);
         }
-        // The last DFS: Get the final result.
+        // The third DFS: get the map from the root node.
+        let mut map: HashMap<String, HashSet<String>> = HashMap::new();
+        for nt in self.mono.to_owned().keys() {
+            self.visited.clear();
+            self.path.clear();
+            let mapnt = map.entry(nt.to_owned()).or_insert(HashSet::new());
+            self.dfs_map(nt.clone(), mapnt);
+        }
+        map
     }
 
     ///
@@ -92,6 +102,28 @@ impl Dfs {
             if self.con.contains_key(&node) {
                 for child in self.con[&node].clone() {
                     self.dfs_conn(child, Some(node.clone()));
+                }
+            }
+            self.path.pop();
+        }
+    }
+
+    ///
+    /// map DFS
+    /// 
+    fn dfs_map(&mut self, node: String, map: &mut HashSet<String>){
+        if !self.path.contains(&node) {
+            for v in self.mono[&node].clone() {
+                map.insert(v);
+            }
+        }
+        if !self.visited.contains(&node) {
+            // pre visited
+            self.visited.insert(node.clone());
+            self.path.push(node.clone());
+            if self.con.contains_key(&node) {
+                for child in self.con[&node].clone() {
+                    self.dfs_map(child, map);
                 }
             }
             self.path.pop();
@@ -147,19 +179,10 @@ fn compose_elements(
     // by using division method.
     // DFS, the element on the loop
     // shares the same set.
-    println!("{:?}", mono);
-    println!("{:?}", con);
-
-    let mut dfs_div = Dfs::new(con.clone());
-    dfs_div.dfs(con);
+    let mut dfs_div = Dfs::new(mono.clone(),con.clone());
+    let map = dfs_div.dfs();
     
-    println!("{:?}",dfs_div.element);
-    println!("{:?}",dfs_div.category);
-    println!("{:?}",dfs_div.tree);
-
-    // Compose all the sets
-    // by recursing.
-    let mut map: HashMap<String, HashSet<String>> = HashMap::new();
+    println!("{:?}",map);
     map
 }
 
@@ -259,13 +282,18 @@ fn gen_productions(contents: &String) -> Vec<Production> {
             });
         }
     }
-    // add the $E$ for the starting non-terminal
+    p
+}
+
+///
+/// add the $E$ for the starting non-terminal
+///
+fn gen_ext_productions(p: &mut Vec<Production>){
     let startnt = p[0].left.clone();
     p.push(Production {
         left: startnt.to_string(),
         right: vec!["$".to_string(), startnt, "$".to_string()],
     });
-    p
 }
 
 ///
@@ -306,12 +334,13 @@ fn find_greater(
 /// for context-free grammar contents.
 ///
 fn opg_generate(contents: &String) -> String {
-    let productions: Vec<Production> = gen_productions(&contents);
+    let mut productions: Vec<Production> = gen_productions(&contents);
     let nts = get_non_terminals(&productions);
     let firstvt = gen_firstvt(&productions, &nts);
     let lastvt = gen_lastvt(&productions, &nts);
-    let mut table: HashMap<(String, String), RELATION> = HashMap::new();
 
+    gen_ext_productions(&mut productions);
+    let mut table: HashMap<(String, String), RELATION> = HashMap::new();
     // if there is conflict on operator precedence,
     // then the grammar is ambiguous.
     // TODO: panic error
