@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::env;
 use std::fs;
-use std::ops::Index;
 
 enum RELATION {
     EQUAL,
@@ -19,6 +18,7 @@ struct Dfs {
     con: HashMap<String, HashSet<String>>,
     visited: HashSet<String>,
     element: HashMap<String, i64>,
+    category: HashMap<i64, HashSet<String>>,
     top: i64,
 }
 
@@ -28,6 +28,7 @@ impl Dfs {
             con: con,
             visited: HashSet::new(),
             element: HashMap::new(),
+            category: HashMap::new(),
             top: -1,
         }
     }
@@ -46,33 +47,42 @@ impl Dfs {
         while dfs_stack.len() > 0 {
             let father = dfs_stack.pop().unwrap();
 
-            // if father is in the stack
-            // then there is a loop in the path
             let mut first = dfs_stack.len();
             for (pos, el) in dfs_stack.iter().enumerate() {
                 if el.eq(&father) {
                     first = pos;
                 }
             }
+
+            println!("{},{:?}",father,dfs_stack);
+            
+            self.top += 1;
+            let cate: i64 = self.top;
             if first < dfs_stack.len() {
-                let mut cate: i64 = -1;
+                // if father is in the stack
+                // then there is a loop in the path
                 for i in first..dfs_stack.len() - 1 {
                     if self.element.contains_key(&dfs_stack[i]) {
-                        // in the same category, TODO from here
-                        cate = self.element[&dfs_stack[i]];
+                        let mono = self.category.entry(self.element[&dfs_stack[i]]).or_default();
+                        // move to the same new category.
+                        for el in mono.to_owned() {
+                            self.element.insert(el.clone(), cate);
+                        }
+                        // clear the original category.
+                        mono.clear();
                     }
                 }
-                if cate == -1 {
-                    cate = self.top + 1;
-                }
-                // merge the category
-                // Union-find set
-                for i in first..dfs_stack.len() - 1 {
-                    self.element.insert(dfs_stack[i].clone(), cate);
-                }
+            } else if !self.element.contains_key(&father){
+                // otherwise, it is a new category if it is not recorded.
+                self.element.insert(father.clone(), cate);
+                let newcate = self.category.entry(cate).or_insert(HashSet::new());
+                newcate.insert(father.clone());
+            } else {
+                self.top -= 1;
             }
-
+            
             // DFS pre visited -- do not visit again
+            // if it is a loop, it won't pass the condition test.
             if !self.visited.contains(&father) {
                 // pre visited
                 self.visited.insert(father.clone());
@@ -103,6 +113,7 @@ fn compose_elements(
         dfs_div.dfs(nt.clone());
     }
     println!("{:?}",dfs_div.element);
+    println!("{:?}",dfs_div.category);
 
     // Compose all the sets
     // by recursing.
