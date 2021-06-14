@@ -18,50 +18,72 @@ struct Production {
 struct Dfs {
     con: HashMap<String, HashSet<String>>,
     visited: HashSet<String>,
-    path: Vec<String>,
     element: HashMap<String, i64>,
-    tree: HashMap<i64, HashSet<String>>
+    top: i64,
 }
 
 impl Dfs {
     fn new(con: HashMap<String, HashSet<String>>) -> Dfs {
-        Dfs{
+        Dfs {
             con: con,
             visited: HashSet::new(),
-            path: Vec::new(),
             element: HashMap::new(),
-            tree: HashMap::new()
+            top: -1,
         }
     }
-}
 
-///
-/// DFS(Depth-First Search) 
-/// on the structure of
-/// Dfs
-///
-fn dfs(dfs_div: &mut Dfs, node: String){
-    // stack-based DFS
-    // path is in the stack
-    let mut dfs_stack: Vec<String> = Vec::new();
-    dfs_stack.push(node);
+    ///
+    /// DFS(Depth-First Search)
+    /// on the structure of
+    /// Dfs
+    ///
+    fn dfs(&mut self, node: String) {
+        // stack-based DFS
+        // path is in the stack
+        let mut dfs_stack: Vec<String> = Vec::new();
+        dfs_stack.push(node);
 
-    while dfs_stack.len() > 0 {
-        let father = dfs_stack.pop().unwrap();
-        // path
+        while dfs_stack.len() > 0 {
+            let father = dfs_stack.pop().unwrap();
 
-        // DFS pre visited -- do not visit again
-        if !dfs_div.visited.contains(&father){
-            // pre visited
-            dfs_div.visited.insert(father.clone());
-            if dfs_div.con.contains_key(&father){
-                for child in dfs_div.con[&father].clone(){
-                    dfs_stack.push(child);
+            // if father is in the stack
+            // then there is a loop in the path
+            let mut first = dfs_stack.len();
+            for (pos, el) in dfs_stack.iter().enumerate() {
+                if el.eq(&father) {
+                    first = pos;
+                }
+            }
+            if first < dfs_stack.len() {
+                let mut cate: i64 = -1;
+                for i in first..dfs_stack.len() - 1 {
+                    if self.element.contains_key(&dfs_stack[i]) {
+                        // in the same category, TODO from here
+                        cate = self.element[&dfs_stack[i]];
+                    }
+                }
+                if cate == -1 {
+                    cate = self.top + 1;
+                }
+                // merge the category
+                // Union-find set
+                for i in first..dfs_stack.len() - 1 {
+                    self.element.insert(dfs_stack[i].clone(), cate);
+                }
+            }
+
+            // DFS pre visited -- do not visit again
+            if !self.visited.contains(&father) {
+                // pre visited
+                self.visited.insert(father.clone());
+                if self.con.contains_key(&father) {
+                    for child in self.con[&father].clone() {
+                        dfs_stack.push(child);
+                    }
                 }
             }
         }
     }
-
 }
 
 fn compose_elements(
@@ -74,11 +96,13 @@ fn compose_elements(
     // DFS, the element on the loop
     // shares the same set.
     println!("{:?}", mono);
+    println!("{:?}", con);
 
     let mut dfs_div = Dfs::new(con.clone());
-    for nt in con.keys(){
-        dfs(&mut dfs_div, nt.clone());
+    for nt in con.keys() {
+        dfs_div.dfs(nt.clone());
     }
+    println!("{:?}",dfs_div.element);
 
     // Compose all the sets
     // by recursing.
