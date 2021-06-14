@@ -20,6 +20,7 @@ struct Dfs {
     path: Vec<String>,
     element: HashMap<String, i64>,
     category: HashMap<i64, HashSet<String>>,
+    tree: HashMap<i64, HashSet<i64>>,
     top: i64,
 }
 
@@ -31,34 +32,88 @@ impl Dfs {
             path: Vec::new(),
             element: HashMap::new(),
             category: HashMap::new(),
+            tree: HashMap::new(),
             top: -1,
         }
     }
 
-    ///
-    /// DFS(Depth-First Search)
-    /// on the structure of
-    /// Dfs
-    ///
-    fn dfs(&mut self, node: String) {
-        // stack-based DFS
-        // path is in the stack
+    fn dfs(&mut self, con: &HashMap<String, HashSet<String>>){
+        // The first DFS: Merge category
+        for nt in con.keys() {
+            self.dfs_merge(nt.clone());
+        }
+        // The second DFS: Establish the connection between categories.
+        self.visited.clear();
+        self.path.clear();
+        for nt in con.keys(){
+            self.dfs_conn(nt.clone(), None);
+        }
+        // The last DFS: Get the final result.
+    }
 
+    ///
+    /// Merge DFS
+    ///
+    fn dfs_merge(&mut self, node: String) {
+
+        self.merge(node.clone());
+        
+        // DFS pre visited -- do not visit again
+        // if it is a loop, it won't pass the condition test.
+        if !self.visited.contains(&node) {
+            // pre visited
+            self.visited.insert(node.clone());
+            self.path.push(node.clone());
+            if self.con.contains_key(&node) {
+                for child in self.con[&node].clone() {
+                    self.dfs_merge(child);
+                }
+            }
+            // post visited
+            self.path.pop();
+        }
+    }
+
+    ///
+    /// connection DFS
+    ///
+    fn dfs_conn(&mut self, node: String, parent: Option<String>){
+        // DFS pre visited -- do not visit again
+        // no looped element is added in the next time.
+        if !self.path.contains(&node) && parent.is_some() {
+            let nodecate = self.element[&parent.unwrap()].clone();
+            let children= self.tree.entry(nodecate).or_insert(HashSet::new());
+            children.insert(self.element[&node]);
+        }
+        if !self.visited.contains(&node) {
+            // pre visited
+            self.visited.insert(node.clone());
+            self.path.push(node.clone());
+            if self.con.contains_key(&node) {
+                for child in self.con[&node].clone() {
+                    self.dfs_conn(child, Some(node.clone()));
+                }
+            }
+            self.path.pop();
+        }
+    }
+
+    ///
+    /// Merge New Category
+    ///
+    fn merge(&mut self, node: String){
         let mut first = self.path.len();
         for (pos, el) in self.path.iter().enumerate() {
             if el.eq(&node) {
                 first = pos;
             }
         }
-        
         self.top += 1;
         let cate: i64 = self.top;
         if first < self.path.len() {
             // there is a loop in the path
-            // println!("{},{:?}",node,self.path);
             for i in first..self.path.len() {
                 // if self.element.contains_key(&self.path[i]) {
-                    // let mono = self.category.entry(self.element[&self.path[i]]).or_default();
                     // move to the same new category.
                     let oldnum = self.element[&self.path[i]];
                     let oldcate = self.category[&oldnum].clone();
@@ -68,7 +123,6 @@ impl Dfs {
                         newcate.insert(el.clone());
                     }
                     // clear the original category.
-                    // mono.clear();
                     self.category.remove(&oldnum);
                 // }
             }
@@ -80,22 +134,8 @@ impl Dfs {
         } else {
             self.top -= 1;
         }
-        
-        // DFS pre visited -- do not visit again
-        // if it is a loop, it won't pass the condition test.
-        if !self.visited.contains(&node) {
-            // pre visited
-            self.visited.insert(node.clone());
-            self.path.push(node.clone());
-            if self.con.contains_key(&node) {
-                for child in self.con[&node].clone() {
-                    self.dfs(child);
-                }
-            }
-            // post visited
-            self.path.pop();
-        }
     }
+
 }
 
 fn compose_elements(
@@ -111,11 +151,11 @@ fn compose_elements(
     println!("{:?}", con);
 
     let mut dfs_div = Dfs::new(con.clone());
-    for nt in con.keys() {
-        dfs_div.dfs(nt.clone());
-    }
+    dfs_div.dfs(con);
+    
     println!("{:?}",dfs_div.element);
     println!("{:?}",dfs_div.category);
+    println!("{:?}",dfs_div.tree);
 
     // Compose all the sets
     // by recursing.
