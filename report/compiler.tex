@@ -93,11 +93,102 @@
 
 \subsection{三进 DFS}
 
-\paragraph{一进 DFS：}
+\paragraph{一进 DFS：归并分类} 现在的依赖关系图依然是有向有环图。根据包含关系的特性，如果出现
+\begin{equation*}
+    S_1 \subseteq S_2 \subseteq \cdots \subseteq S_n \subseteq S_1
+\end{equation*}
+所对应的环路
+\begin{equation*}
+    S_1 \rightarrow S_2 \rightarrow \cdots \rightarrow S_n \rightarrow S_1
+\end{equation*}
+则这些集合都是相等的：
+\begin{equation*}
+    S_1 = S_2 = \cdots = S_n
+\end{equation*}
 
+使用 DFS 检测环路，并采用类似并查集的方法归并同类的元素，记录每个非终结符所对应的集合号码，以及每一类的非终结符集合。
 
-%% 二义性
-% 如果一个文法是无二义性的，那么该文法的每个右句型都有且只有一个句柄。
+\begin{table}[h]
+    \centering
+    \caption{类别号码}\label{tab:num}
+    \subfigure[\textit{FIRSTVT}]{
+        \begin{tabular}{|c|c|c|}
+            \toprule
+            $F$ & $E$ & $T$ \\
+            \midrule
+            \bfseries 0 &\bfseries 2 &\bfseries 4 \\
+            \bottomrule
+        \end{tabular}
+    }
+    \subfigure[\textit{LASTVT}]{
+        \begin{tabular}{|c|c|c|}
+            \toprule
+            $F$ & $E$ & $T$ \\
+            \midrule
+            \bfseries 1 &\bfseries 2 &\bfseries 0 \\
+            \bottomrule
+        \end{tabular}
+    }
+\end{table}
+
+\paragraph{二进 DFS：连接消环} 通过再一次的 DFS 构造类别之间的 DAG（有向无环图），因为此时同类型内部的环边已经被消除。
+
+\begin{figure}[H]
+    \centering
+    \subfigure[\textit{FIRSTVT}]{\input{img/firstcate.tex}}
+    \subfigure[\textit{LASTVT}]{\input{img/lastcate.tex}}
+    \caption{类别连接}\label{fig:conn}
+\end{figure}
+
+\paragraph{三进 DFS：映射输出} 对于每一个非终结符，查类别号码表 \ref{tab:num} 得到其对应类别，然后在类别连接图 \ref{fig:conn} 中从该类别节点进行 DFS，合并路上对应的终结符节点，就可以得到该非终结符对应的集合。
+
+\begin{table}[h]
+    \centering
+    \caption{集合}
+    \subfigure[\textit{FIRSTVT}]{
+        \begin{tabular}{c|>{\ttfamily}l}
+            \hline
+            $E$ & i + ( * \\
+            \hline
+            $T$ & i ( * \\
+            \hline
+            $F$ & i ( \\
+            \hline
+        \end{tabular}
+    }
+    \subfigure[\textit{LASTVT}]{
+        \begin{tabular}{c|>{\ttfamily}l}
+            \hline
+            $E$ & i + ) * \\
+            \hline
+            $T$ & i ) * \\
+            \hline
+            $F$ & i ) \\
+            \hline
+        \end{tabular}
+    }
+\end{table}
+
+\subsection{识别关系}
+
+最后一步，就是根据定义 \ref{def:opn} 来遍历产生式检测终结符号之间的优先关系了。在识别之前，需要现在产生式的集合中加入对于开始符号的输入首尾标记：
+\begin{equation*}
+    E \rightarrow \$ E \$
+\end{equation*}
+因为该符号比较特殊，其优先级是额外定义的\cite{opgwiki}：
+\begin{equation*}
+    \$ < T, T > \$, \$=\$,\quad \forall T\in V_T
+\end{equation*}
+并不属于原有的语法，所以要在这个地方再加入。
+
+最终就可以得到本部分开头的程序输出。
+
+\section{函数接口}
+
+% 接口图
+% uftrace 跟踪函数调用
+
+关于函数的更多信息，请访问 \href{run:../opg/target/doc/opg/index.html}{函数文档}。
 
 \part{卷积优化}
 \subsection*{优化结果}

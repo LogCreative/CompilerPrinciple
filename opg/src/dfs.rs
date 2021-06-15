@@ -167,11 +167,6 @@ pub fn compose_elements(
     // by using division method.
     // DFS, the element on the loop
     // shares the same set.
-
-    {
-        println!("{:?}", mono);
-        println!("{:?}", con);
-    }
     
     let mut dfs_div = Dfs::new(mono.clone(), con.clone());
     dfs_div.dfs()
