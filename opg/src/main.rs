@@ -1,3 +1,6 @@
+mod dfs;
+mod table;
+
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::env;
@@ -6,173 +9,6 @@ use std::fs;
 struct Production {
     left: String,
     right: Vec<String>,
-}
-
-struct Dfs {
-    mono: HashMap<String, HashSet<String>>,
-    con: HashMap<String, HashSet<String>>,
-    visited: HashSet<String>,
-    path: Vec<String>,
-    element: HashMap<String, i64>,
-    category: HashMap<i64, HashSet<String>>,
-    tree: HashMap<i64, HashSet<i64>>,
-    top: i64,
-}
-
-impl Dfs {
-    fn new(mono: HashMap<String, HashSet<String>>, con: HashMap<String, HashSet<String>>) -> Dfs {
-        Dfs {
-            mono: mono,
-            con: con,
-            visited: HashSet::new(),
-            path: Vec::new(),
-            element: HashMap::new(),
-            category: HashMap::new(),
-            tree: HashMap::new(),
-            top: -1,
-        }
-    }
-
-    fn dfs(&mut self) -> HashMap<String, HashSet<String>> {
-        // The first DFS: Merge category
-        for nt in self.mono.to_owned().keys() {
-            self.dfs_merge(nt.clone());
-        }
-        // The second DFS: Establish the connection between categories.
-        self.visited.clear();
-        self.path.clear();
-        for nt in self.mono.to_owned().keys() {
-            self.dfs_conn(nt.clone(), None);
-        }
-        // The third DFS: get the map from the root node.
-        let mut map: HashMap<String, HashSet<String>> = HashMap::new();
-        for nt in self.mono.to_owned().keys() {
-            self.visited.clear();
-            self.path.clear();
-            let mapnt = map.entry(nt.to_owned()).or_insert(HashSet::new());
-            self.dfs_map(nt.clone(), mapnt);
-        }
-        map
-    }
-
-    ///
-    /// Merge DFS
-    ///
-    fn dfs_merge(&mut self, node: String) {
-        self.merge(node.clone());
-
-        // DFS pre visited -- do not visit again
-        // if it is a loop, it won't pass the condition test.
-        if !self.visited.contains(&node) {
-            // pre visited
-            self.visited.insert(node.clone());
-            self.path.push(node.clone());
-            if self.con.contains_key(&node) {
-                for child in self.con[&node].clone() {
-                    self.dfs_merge(child);
-                }
-            }
-            // post visited
-            self.path.pop();
-        }
-    }
-
-    ///
-    /// connection DFS
-    ///
-    fn dfs_conn(&mut self, node: String, parent: Option<String>) {
-        // DFS pre visited -- do not visit again
-        // no looped element is added in the next time.
-        if !self.path.contains(&node) && parent.is_some() {
-            let nodecate = self.element[&parent.unwrap()].clone();
-            let children = self.tree.entry(nodecate).or_insert(HashSet::new());
-            children.insert(self.element[&node]);
-        }
-        if !self.visited.contains(&node) {
-            // pre visited
-            self.visited.insert(node.clone());
-            self.path.push(node.clone());
-            if self.con.contains_key(&node) {
-                for child in self.con[&node].clone() {
-                    self.dfs_conn(child, Some(node.clone()));
-                }
-            }
-            self.path.pop();
-        }
-    }
-
-    ///
-    /// map DFS
-    ///
-    fn dfs_map(&mut self, node: String, map: &mut HashSet<String>) {
-        if !self.path.contains(&node) {
-            for v in self.mono[&node].clone() {
-                map.insert(v);
-            }
-        }
-        if !self.visited.contains(&node) {
-            // pre visited
-            self.visited.insert(node.clone());
-            self.path.push(node.clone());
-            if self.con.contains_key(&node) {
-                for child in self.con[&node].clone() {
-                    self.dfs_map(child, map);
-                }
-            }
-            self.path.pop();
-        }
-    }
-
-    ///
-    /// Merge New Category
-    ///
-    fn merge(&mut self, node: String) {
-        let mut first = self.path.len();
-        for (pos, el) in self.path.iter().enumerate() {
-            if el.eq(&node) {
-                first = pos;
-            }
-        }
-        self.top += 1;
-        let cate: i64 = self.top;
-        if first < self.path.len() {
-            // there is a loop in the path
-            for i in first..self.path.len() {
-                // if self.element.contains_key(&self.path[i]) {
-                // move to the same new category.
-                let oldnum = self.element[&self.path[i]];
-                let oldcate = self.category[&oldnum].clone();
-                let newcate = self.category.entry(cate).or_insert(HashSet::new());
-                for el in oldcate {
-                    self.element.insert(el.clone(), cate);
-                    newcate.insert(el.clone());
-                }
-                // clear the original category.
-                self.category.remove(&oldnum);
-                // }
-            }
-        } else if !self.element.contains_key(&node) {
-            // otherwise, it is a new category if it is not recorded.
-            self.element.insert(node.clone(), cate);
-            let newcate = self.category.entry(cate).or_insert(HashSet::new());
-            newcate.insert(node.clone());
-        } else {
-            self.top -= 1;
-        }
-    }
-}
-
-fn compose_elements(
-    mono: &HashMap<String, HashSet<String>>,
-    con: &HashMap<String, HashSet<String>>,
-) -> HashMap<String, HashSet<String>> {
-    // Eliminate loop on
-    // the containing recursive tree
-    // by using division method.
-    // DFS, the element on the loop
-    // shares the same set.
-    let mut dfs_div = Dfs::new(mono.clone(), con.clone());
-    dfs_div.dfs()
 }
 
 ///
@@ -210,7 +46,7 @@ fn gen_firstvt(
             vts.insert(p.right.first().unwrap().to_string());
         }
     }
-    let firstvt = compose_elements(&firstvtmono, &firstvtcon);
+    let firstvt = dfs::compose_elements(&firstvtmono, &firstvtcon);
     firstvt
 }
 
@@ -249,7 +85,7 @@ fn gen_lastvt(
             vts.insert(p.right.last().unwrap().to_string());
         }
     }
-    let lastvt = compose_elements(&lastvtmono, &lastvtcon);
+    let lastvt = dfs::compose_elements(&lastvtmono, &lastvtcon);
     lastvt
 }
 
@@ -298,21 +134,10 @@ fn get_terminals(productions: &Vec<Production>, nts: &HashSet<String>) -> HashSe
 }
 
 ///
-/// Insert to table
-///
-fn insert_table(table: &mut HashMap<(String, String), char>, ttuple: &(String, String), ch: char) {
-    if table.contains_key(&ttuple) && table[&ttuple] != ch {
-        println!("The grammar is ambiguous.");
-        panic!("Ambiguous grammar detected.");
-    }
-    table.insert(ttuple.clone(), ch);
-}
-
-///
 /// Find the equal operators
 ///
 fn find_eq(
-    table: &mut HashMap<(String, String), char>,
+    table: &mut table::OpTable,
     productions: &Vec<Production>,
     nts: &HashSet<String>,
 ) {
@@ -321,7 +146,7 @@ fn find_eq(
         pe.retain(|x| !nts.contains(x));
         for i in 0..pe.len() {
             for j in i + 1..pe.len() {
-                insert_table(table, &(pe[i].clone(), pe[j].clone()), '=');
+                table.insert(&(pe[i].clone(), pe[j].clone()), '=');
             }
         }
     }
@@ -331,7 +156,7 @@ fn find_eq(
 /// Find the less relations
 ///
 fn find_less(
-    table: &mut HashMap<(String, String), char>,
+    table: &mut table::OpTable,
     productions: &Vec<Production>,
     nts: &HashSet<String>,
     firstvt: &HashMap<String, HashSet<String>>,
@@ -343,7 +168,7 @@ fn find_less(
         for i in 0..p.right.len() - 1 {
             if !nts.contains(&p.right[i]) && nts.contains(&p.right[i + 1]) {
                 for t in firstvt[&p.right[i + 1]].iter() {
-                    insert_table(table, &(p.right[i].to_owned(), t.to_owned()), '<');
+                    table.insert(&(p.right[i].to_owned(), t.to_owned()), '<');
                 }
             }
         }
@@ -354,7 +179,7 @@ fn find_less(
 /// Find the greater relations
 ///
 fn find_greater(
-    table: &mut HashMap<(String, String), char>,
+    table: &mut table::OpTable,
     productions: &Vec<Production>,
     nts: &HashSet<String>,
     lastvt: &HashMap<String, HashSet<String>>,
@@ -366,37 +191,11 @@ fn find_greater(
         for i in 0..p.right.len() - 1 {
             if nts.contains(&p.right[i]) && !nts.contains(&p.right[i + 1]) {
                 for t in lastvt[&p.right[i]].iter() {
-                    insert_table(table, &(t.to_owned(), p.right[i + 1].to_owned()), '>');
+                    table.insert( &(t.to_owned(), p.right[i + 1].to_owned()), '>');
                 }
             }
         }
     }
-}
-
-///
-/// Print table
-///
-fn print_table(table: &HashMap<(String, String), char>, ts: &HashSet<String>) -> String{
-    let mut output:String = "".to_owned();
-    output = output + " \t";
-    for j in ts {
-        output  = output + j + "\t";
-    }
-    output  = output + "\n";
-
-    for i in ts {
-        output  = output + i + "\t";
-        for j in ts {
-            let ttuple = (i.clone(), j.clone());
-            if table.contains_key(&ttuple) {
-                output = output + &table[&ttuple].to_string() + "\t";
-            } else {
-                output = output + " \t";
-            }
-        }
-        output = output + "\n";
-    }
-    output
 }
 
 ///
@@ -416,17 +215,17 @@ fn opg_generate(contents: &String) {
         right: vec!["$".to_string(), startnt, "$".to_string()],
     });
 
-    let mut table: HashMap<(String, String), char> = HashMap::new();
+    let ts = get_terminals(&productions, &nts);
+    let mut table = table::OpTable::new(ts.clone());
+
     // if there is conflict on operator precedence,
     // then the grammar is ambiguous.
     find_eq(&mut table, &productions, &nts);
     find_less(&mut table, &productions, &nts, &firstvt);
     find_greater(&mut table, &productions, &nts, &lastvt);
 
-    let ts = get_terminals(&productions, &nts);
-    let output = print_table(&table, &ts);
-    fs::write("output.txt", &output).expect("Cannot output file!");
-    print!("{}", &output);
+    print!("{}", table);
+    fs::write("output.txt", &table.to_string()).expect("Cannot output file!");
 }
 
 fn main() {

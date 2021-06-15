@@ -5,14 +5,16 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{float}
+\usepackage{subfigure}
+\usepackage{tikz}
+\usetikzlibrary{shapes}
 \usepackage{listings}
 \lstset{basicstyle=\ttfamily, frame=single, columns=flexible}
 \bibliographystyle{IEEEtran}
 \title{\normalsize\underline{编译原理(A)大作业}\\\Large 算符优先分析表和卷积优化}
 \author{李子龙 518070910095}
-
 \begin{document}
-    \maketitle
+    \maketitle 
     \tableofcontents
     \clearpage
 
@@ -20,7 +22,7 @@
 \subsection*{运行环境}
 \begin{tabular}{ll}
     操作系统 & Windows \\
-    语言 & Rust \\
+    语言 & Rust\cite{SteveKlabnik2019} \\
 \end{tabular}
 \vspace*{1em}
 \begin{lstlisting}[frameround=fttt]
@@ -55,15 +57,15 @@
 \begin{definition}\label{def:vt}
     假设 $V_T$ 是该文法终结符号对应的集合，$V_N$ 是该文法非终结符号对应的集合。对符号 $U_1$ 定义下面两个集合：
     \begin{align}
-        \textit{FIRSTVT}(U_1) &= \{T|(U_1\Rightarrow Ty \vee U_1\Rightarrow U_2Ty)\land T\in V_T\land U_2\in V_N\}  \\
-        \textit{LASTVT}(U_1) &= \{T|(U_1\Rightarrow xT \vee U_1\Rightarrow xTU_2)\land T\in V_T\land U_2\in V_N\}
+        \textit{FIRSTVT}(U_1) &= \{T|(U_1\Rightarrow Ty \vee U_1\Rightarrow U_2Ty)\land T\in V_T\land U_2\in V_N\} \label{eq:mono1} \\
+        \textit{LASTVT}(U_1) &= \{T|(U_1\Rightarrow xT \vee U_1\Rightarrow xTU_2)\land T\in V_T\land U_2\in V_N\} \label{eq:mono2}
     \end{align}
 \end{definition}
 
 除了上面的定义方法，对于这样的集合，还有这样的性质：
 \begin{align}
-    (U_1\Rightarrow U_2y) &\Rightarrow \textit{FIRSTVT}(U_2)\subseteq \textit{FIRSTVT}(U_1) \\
-    (U_1\Rightarrow xU_2) &\Rightarrow \textit{LASTVT}(U_2)\subseteq \textit{LASTVT}(U_1)
+    (U_1\Rightarrow U_2y) &\Rightarrow \textit{FIRSTVT}(U_2)\subseteq \textit{FIRSTVT}(U_1) \label{eq:con1} \\
+    (U_1\Rightarrow xU_2) &\Rightarrow \textit{LASTVT}(U_2)\subseteq \textit{LASTVT}(U_1) \label{eq:con2}
 \end{align}
 
 这样定义 \ref{def:op} 就有了如下的等价定义：
@@ -76,9 +78,23 @@
     \end{enumerate}
 \end{definition}
 
-\section{算法实现}
+\section{算法描述}
 
-本程序采用 Rust 语言实现\cite{SteveKlabnik2019}。
+\subsection{集合依赖关系}
+
+首要任务就是对于每一个非终结符求出 $\textit{FIRSTVT}$ 和 $\textit{LASTVT}$。式 \eqref{eq:mono1} 和 \eqref{eq:mono2} 所对应的终结符为图中的盲端，式 \eqref{eq:con1} 和 \eqref{eq:con2} 所对应的非终结符导出的依赖节点为中间节点。这样就可以构造出集合的依赖关系有向图。
+
+\begin{figure}[h]
+    \centering
+    \subfigure[\textit{FIRSTVT}依赖关系图]{\input{img/firstvt.tex}}
+    \subfigure[\textit{LASTVT}依赖关系图]{\input{img/lastvt.tex}}
+    \caption{依赖关系图}
+\end{figure}
+
+\subsection{三进 DFS}
+
+\paragraph{一进 DFS：}
+
 
 %% 二义性
 % 如果一个文法是无二义性的，那么该文法的每个右句型都有且只有一个句柄。

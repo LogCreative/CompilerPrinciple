@@ -1,0 +1,43 @@
+%& C:\Users\lizil\AppData\Roaming\TikzEdt\TikzEdt\023~1.0\TEMP_H~1
+\begin{document}
+\usetikzlibrary{shapes}
+\begin{tikzpicture}
+\tikzstyle{mono}=[draw,circle,minimum width=2em];
+\tikzstyle{con}=[draw,rounded rectangle,minimum height=2em,minimum width=4em];
+\tikzstyle{dir}=[->];
+\node [con] (v1) at (-1,0.5) {$E$};
+\node [con] (v2) at (-2,-0.5) {$T$};
+\node [con] (v3) at (-3,-1.5) {$F$};
+\draw [dir] (v1) edge (v2);
+\draw [dir] (v2) edge (v3);
+\node [mono] (v6) at (-1.5,-1.5) {*};
+\node [mono] (v4) at (-3.5,-2.5) {i};
+\node [mono] (v5) at (-2.5,-2.5) {)};
+\node [mono] (v7) at (-0.5,-0.5) {+};
+\draw [dir] (v3) edge (v4);
+\draw [dir] (v3) edge (v5);
+\draw [dir] (v2) edge (v6);
+\draw [dir] (v1) edge (v7);
+
+\usetikzlibrary{calc}
+\pgftransformreset
+\node[inner sep=0pt,outer sep=0pt,minimum size=0pt,line width=0pt,text width=0pt,text height=0pt] at (current bounding box) {};
+%add border to avoid cropping by pdflibnet
+\foreach \border in {0.1}
+  \useasboundingbox (current bounding box.south west)+(-\border,-\border) rectangle (current bounding box.north east)+(\border,\border);
+\newwrite\metadatafile
+\immediate\openout\metadatafile=\jobname_BB.txt
+\path
+  let
+    \p1=(current bounding box.south west),
+    \p2=(current bounding box.north east)
+  in
+  node[inner sep=0pt,outer sep=0pt,minimum size=0pt,line width=0pt,text width=0pt,text height=0pt,draw=white] at (current bounding box) {
+\immediate\write\metadatafile{\p1,\p2}
+};
+\immediate\closeout\metadatafile
+\end{tikzpicture}
+
+\end{document}
+
+
