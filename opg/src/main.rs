@@ -376,25 +376,27 @@ fn find_greater(
 ///
 /// Print table
 ///
-fn print_table(table: &HashMap<(String, String), char>, ts: &HashSet<String>) {
-    print!(" \t");
+fn print_table(table: &HashMap<(String, String), char>, ts: &HashSet<String>) -> String{
+    let mut output:String = "".to_owned();
+    output = output + " \t";
     for j in ts {
-        print!("{}\t", j);
+        output  = output + j + "\t";
     }
-    print!("\n");
+    output  = output + "\n";
 
     for i in ts {
-        print!("{}\t", i);
+        output  = output + i + "\t";
         for j in ts {
             let ttuple = (i.clone(), j.clone());
             if table.contains_key(&ttuple) {
-                print!("{}\t", table[&ttuple]);
+                output = output + &table[&ttuple].to_string() + "\t";
             } else {
-                print!(" \t");
+                output = output + " \t";
             }
         }
-        print!("\n");
+        output = output + "\n";
     }
+    output
 }
 
 ///
@@ -422,7 +424,9 @@ fn opg_generate(contents: &String) {
     find_greater(&mut table, &productions, &nts, &lastvt);
 
     let ts = get_terminals(&productions, &nts);
-    print_table(&table, &ts);
+    let output = print_table(&table, &ts);
+    fs::write("output.txt", &output).expect("Cannot output file!");
+    print!("{}", &output);
 }
 
 fn main() {
