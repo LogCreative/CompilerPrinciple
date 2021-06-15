@@ -3,12 +3,6 @@ use std::collections::HashSet;
 use std::env;
 use std::fs;
 
-enum RELATION {
-    EQUAL,
-    LESS,
-    GREATER,
-}
-
 struct Production {
     left: String,
     right: Vec<String>,
@@ -26,7 +20,7 @@ struct Dfs {
 }
 
 impl Dfs {
-    fn new(mono:HashMap<String, HashSet<String>>, con: HashMap<String, HashSet<String>>) -> Dfs {
+    fn new(mono: HashMap<String, HashSet<String>>, con: HashMap<String, HashSet<String>>) -> Dfs {
         Dfs {
             mono: mono,
             con: con,
@@ -65,9 +59,8 @@ impl Dfs {
     /// Merge DFS
     ///
     fn dfs_merge(&mut self, node: String) {
-
         self.merge(node.clone());
-        
+
         // DFS pre visited -- do not visit again
         // if it is a loop, it won't pass the condition test.
         if !self.visited.contains(&node) {
@@ -87,12 +80,12 @@ impl Dfs {
     ///
     /// connection DFS
     ///
-    fn dfs_conn(&mut self, node: String, parent: Option<String>){
+    fn dfs_conn(&mut self, node: String, parent: Option<String>) {
         // DFS pre visited -- do not visit again
         // no looped element is added in the next time.
         if !self.path.contains(&node) && parent.is_some() {
             let nodecate = self.element[&parent.unwrap()].clone();
-            let children= self.tree.entry(nodecate).or_insert(HashSet::new());
+            let children = self.tree.entry(nodecate).or_insert(HashSet::new());
             children.insert(self.element[&node]);
         }
         if !self.visited.contains(&node) {
@@ -110,8 +103,8 @@ impl Dfs {
 
     ///
     /// map DFS
-    /// 
-    fn dfs_map(&mut self, node: String, map: &mut HashSet<String>){
+    ///
+    fn dfs_map(&mut self, node: String, map: &mut HashSet<String>) {
         if !self.path.contains(&node) {
             for v in self.mono[&node].clone() {
                 map.insert(v);
@@ -133,7 +126,7 @@ impl Dfs {
     ///
     /// Merge New Category
     ///
-    fn merge(&mut self, node: String){
+    fn merge(&mut self, node: String) {
         let mut first = self.path.len();
         for (pos, el) in self.path.iter().enumerate() {
             if el.eq(&node) {
@@ -146,19 +139,19 @@ impl Dfs {
             // there is a loop in the path
             for i in first..self.path.len() {
                 // if self.element.contains_key(&self.path[i]) {
-                    // move to the same new category.
-                    let oldnum = self.element[&self.path[i]];
-                    let oldcate = self.category[&oldnum].clone();
-                    let newcate = self.category.entry(cate).or_insert(HashSet::new());
-                    for el in oldcate {
-                        self.element.insert(el.clone(), cate);
-                        newcate.insert(el.clone());
-                    }
-                    // clear the original category.
-                    self.category.remove(&oldnum);
+                // move to the same new category.
+                let oldnum = self.element[&self.path[i]];
+                let oldcate = self.category[&oldnum].clone();
+                let newcate = self.category.entry(cate).or_insert(HashSet::new());
+                for el in oldcate {
+                    self.element.insert(el.clone(), cate);
+                    newcate.insert(el.clone());
+                }
+                // clear the original category.
+                self.category.remove(&oldnum);
                 // }
             }
-        } else if !self.element.contains_key(&node){
+        } else if !self.element.contains_key(&node) {
             // otherwise, it is a new category if it is not recorded.
             self.element.insert(node.clone(), cate);
             let newcate = self.category.entry(cate).or_insert(HashSet::new());
@@ -167,7 +160,6 @@ impl Dfs {
             self.top -= 1;
         }
     }
-
 }
 
 fn compose_elements(
@@ -179,11 +171,8 @@ fn compose_elements(
     // by using division method.
     // DFS, the element on the loop
     // shares the same set.
-    let mut dfs_div = Dfs::new(mono.clone(),con.clone());
-    let map = dfs_div.dfs();
-    
-    println!("{:?}",map);
-    map
+    let mut dfs_div = Dfs::new(mono.clone(), con.clone());
+    dfs_div.dfs()
 }
 
 ///
@@ -286,17 +275,6 @@ fn gen_productions(contents: &String) -> Vec<Production> {
 }
 
 ///
-/// add the $E$ for the starting non-terminal
-///
-fn gen_ext_productions(p: &mut Vec<Production>){
-    let startnt = p[0].left.clone();
-    p.push(Production {
-        left: startnt.to_string(),
-        right: vec!["$".to_string(), startnt, "$".to_string()],
-    });
-}
-
-///
 /// Get all the non terminals from
 /// the generated production.
 ///
@@ -305,60 +283,157 @@ fn get_non_terminals(productions: &Vec<Production>) -> HashSet<String> {
 }
 
 ///
+/// Get terminals
+///
+fn get_terminals(productions: &Vec<Production>, nts: &HashSet<String>) -> HashSet<String> {
+    let mut ts: HashSet<String> = HashSet::new();
+    for p in productions {
+        for v in p.right.iter() {
+            if !nts.contains(v) {
+                ts.insert(v.clone());
+            }
+        }
+    }
+    ts
+}
+
+///
+/// Insert to table
+///
+fn insert_table(table: &mut HashMap<(String, String), char>, ttuple: &(String, String), ch: char) {
+    if table.contains_key(&ttuple) && table[&ttuple] != ch {
+        println!("The grammar is ambigous.");
+        panic!("Ambigous grammar detected.");
+    }
+    table.insert(ttuple.clone(), ch);
+}
+
+///
 /// Find the equal operators
 ///
-fn find_eq(table: &mut HashMap<(String, String), RELATION>, productions: &Vec<Production>) {}
+fn find_eq(
+    table: &mut HashMap<(String, String), char>,
+    productions: &Vec<Production>,
+    nts: &HashSet<String>,
+) {
+    for p in productions {
+        let mut pe = p.right.clone();
+        pe.retain(|x| !nts.contains(x));
+        for i in 0..pe.len() {
+            for j in i + 1..pe.len() {
+                insert_table(table, &(pe[i].clone(), pe[j].clone()), '=');
+            }
+        }
+    }
+}
 
 ///
 /// Find the less relations
 ///
 fn find_less(
-    table: &mut HashMap<(String, String), RELATION>,
+    table: &mut HashMap<(String, String), char>,
     productions: &Vec<Production>,
+    nts: &HashSet<String>,
     firstvt: &HashMap<String, HashSet<String>>,
 ) {
+    for p in productions {
+        if p.right.len() <= 1 {
+            continue;
+        }
+        for i in 0..p.right.len() - 1 {
+            if !nts.contains(&p.right[i]) && nts.contains(&p.right[i + 1]) {
+                for t in firstvt[&p.right[i + 1]].iter() {
+                    insert_table(table, &(p.right[i].to_owned(), t.to_owned()), '<');
+                }
+            }
+        }
+    }
 }
 
 ///
 /// Find the greater relations
 ///
 fn find_greater(
-    table: &mut HashMap<(String, String), RELATION>,
+    table: &mut HashMap<(String, String), char>,
     productions: &Vec<Production>,
+    nts: &HashSet<String>,
     lastvt: &HashMap<String, HashSet<String>>,
 ) {
+    for p in productions {
+        if p.right.len() <= 1 {
+            continue;
+        }
+        for i in 0..p.right.len() - 1 {
+            if nts.contains(&p.right[i]) && !nts.contains(&p.right[i + 1]) {
+                for t in lastvt[&p.right[i]].iter() {
+                    insert_table(table, &(t.to_owned(), p.right[i + 1].to_owned()), '>');
+                }
+            }
+        }
+    }
+}
+
+///
+/// Print table
+///
+fn print_table(table: &HashMap<(String, String), char>, ts: &HashSet<String>) {
+    print!(" \t");
+    for j in ts {
+        print!("{}\t", j);
+    }
+    print!("\n");
+
+    for i in ts {
+        print!("{}\t", i);
+        for j in ts {
+            let ttuple = (i.clone(), j.clone());
+            if table.contains_key(&ttuple) {
+                print!("{}\t", table[&ttuple]);
+            } else {
+                print!(" \t");
+            }
+        }
+        print!("\n");
+    }
 }
 
 ///
 /// Generate Operator Precedence Table
 /// for context-free grammar contents.
 ///
-fn opg_generate(contents: &String) -> String {
+fn opg_generate(contents: &String) {
     let mut productions: Vec<Production> = gen_productions(&contents);
     let nts = get_non_terminals(&productions);
     let firstvt = gen_firstvt(&productions, &nts);
     let lastvt = gen_lastvt(&productions, &nts);
 
-    gen_ext_productions(&mut productions);
-    let mut table: HashMap<(String, String), RELATION> = HashMap::new();
+    // add the $E$ for the starting non-terminal
+    let startnt = productions[0].left.clone();
+    productions.push(Production {
+        left: startnt.to_string(),
+        right: vec!["$".to_string(), startnt, "$".to_string()],
+    });
+
+    let mut table: HashMap<(String, String), char> = HashMap::new();
     // if there is conflict on operator precedence,
     // then the grammar is ambiguous.
-    // TODO: panic error
-    find_eq(&mut table, &productions);
-    find_less(&mut table, &productions, &firstvt);
-    find_greater(&mut table, &productions, &lastvt);
+    find_eq(&mut table, &productions, &nts);
+    find_less(&mut table, &productions, &nts, &firstvt);
+    find_greater(&mut table, &productions, &nts, &lastvt);
 
-    contents.clone()
+    let ts = get_terminals(&productions, &nts);
+    print_table(&table, &ts);
 }
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     // File for input
+    if args.len() < 2 {
+        panic!("Please follow a file name!");
+    }
     let filename = &args[1];
     // Contents of the file
     let contents = fs::read_to_string(filename).expect("No such file.");
     // Get the table
-    let table = opg_generate(&contents);
-    // Output the table
-    println!("{}", table);
+    opg_generate(&contents);
 }
