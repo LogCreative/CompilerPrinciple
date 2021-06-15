@@ -90,50 +90,6 @@ fn gen_lastvt(
 }
 
 ///
-/// Generate production list for
-/// the grammar contents.
-///
-fn gen_productions(contents: &String) -> Vec<Production> {
-    let mut p: Vec<Production> = Vec::new();
-    for line in contents.lines() {
-        let ps: Vec<_> = line.split("->").collect();
-        let ls = ps[0].trim();
-        let rs: Vec<_> = ps[1].split("|").collect();
-        for rsp in rs {
-            let vs: Vec<_> = rsp.split_whitespace().collect();
-            p.push(Production {
-                left: ls.to_string(),
-                right: vs.iter().map(|s| s.to_string()).collect(),
-            });
-        }
-    }
-    p
-}
-
-///
-/// Get all the non terminals from
-/// the generated production.
-///
-fn get_non_terminals(productions: &Vec<Production>) -> HashSet<String> {
-    productions.iter().map(|s| s.left.clone()).collect()
-}
-
-///
-/// Get terminals
-///
-fn get_terminals(productions: &Vec<Production>, nts: &HashSet<String>) -> HashSet<String> {
-    let mut ts: HashSet<String> = HashSet::new();
-    for p in productions {
-        for v in p.right.iter() {
-            if !nts.contains(v) {
-                ts.insert(v.clone());
-            }
-        }
-    }
-    ts
-}
-
-///
 /// Find the equal operators
 ///
 fn find_eq(
@@ -196,6 +152,50 @@ fn find_greater(
             }
         }
     }
+}
+
+///
+/// Generate production list for
+/// the grammar contents.
+///
+fn gen_productions(contents: &String) -> Vec<Production> {
+    let mut p: Vec<Production> = Vec::new();
+    for line in contents.lines() {
+        let ps: Vec<_> = line.split("->").collect();
+        let ls = ps[0].trim();
+        let rs: Vec<_> = ps[1].split("|").collect();
+        for rsp in rs {
+            let vs: Vec<_> = rsp.split_whitespace().collect();
+            p.push(Production {
+                left: ls.to_string(),
+                right: vs.iter().map(|s| s.to_string()).collect(),
+            });
+        }
+    }
+    p
+}
+
+///
+/// Get all the non terminals from
+/// the generated production.
+///
+fn get_non_terminals(productions: &Vec<Production>) -> HashSet<String> {
+    productions.iter().map(|s| s.left.clone()).collect()
+}
+
+///
+/// Get terminals
+///
+fn get_terminals(productions: &Vec<Production>, nts: &HashSet<String>) -> HashSet<String> {
+    let mut ts: HashSet<String> = HashSet::new();
+    for p in productions {
+        for v in p.right.iter() {
+            if !nts.contains(v) {
+                ts.insert(v.clone());
+            }
+        }
+    }
+    ts
 }
 
 ///
