@@ -7,3 +7,5 @@
 *.bib.sav
 target/
 *.lock
+*.bbl
+*.blg

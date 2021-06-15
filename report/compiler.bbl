@@ -25,4 +25,12 @@
 R.~W. Floyd, ``Syntactic analysis and operator precedence,'' \emph{Journal of
   the {ACM}}, vol.~10, no.~3, pp. 316--333, Jul. 1963.
 
+\bibitem{SteveKlabnik2019}
+\BIBentryALTinterwordspacing
+C.~N. Steve~Klabnik, \emph{The Rust Programming Language (Covers Rust
+  2018)}.\hskip 1em plus 0.5em minus 0.4em\relax Random House LCC US, 2019.
+  [Online]. Available:
+  \url{https://www.ebook.de/de/product/37149179/steve_klabnik_carol_nichols_the_rust_programming_language_covers_rust_2018.html}
+\BIBentrySTDinterwordspacing
+
 \end{thebibliography}

@@ -302,8 +302,8 @@ fn get_terminals(productions: &Vec<Production>, nts: &HashSet<String>) -> HashSe
 ///
 fn insert_table(table: &mut HashMap<(String, String), char>, ttuple: &(String, String), ch: char) {
     if table.contains_key(&ttuple) && table[&ttuple] != ch {
-        println!("The grammar is ambigous.");
-        panic!("Ambigous grammar detected.");
+        println!("The grammar is ambiguous.");
+        panic!("Ambiguous grammar detected.");
     }
     table.insert(ttuple.clone(), ch);
 }
