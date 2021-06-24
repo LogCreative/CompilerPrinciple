@@ -9,7 +9,7 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes}
 \usepackage{listings}
-\lstset{basicstyle=\ttfamily, frame=single, columns=flexible}
+\lstset{basicstyle=\ttfamily, frame=single, columns=flexible, extendedchars=false}
 \bibliographystyle{IEEEtran}
 \title{\normalsize\underline{编译原理(A)大作业}\\\Large 算符优先分析表和卷积优化}
 \author{李子龙 518070910095}
@@ -185,10 +185,21 @@
 
 \section{函数接口}
 
-% 接口图
-% uftrace 跟踪函数调用
+以下是运行样例 1 时由 uftrace\cite{uft} 生成的函数调用列表。
+% 接口调用
+\lstinputlisting[language=c,basicstyle=\scriptsize\ttfamily, commentstyle=\color{green!50!black}]{img/replay.txt}
 
-关于函数的更多信息，请访问 \href{run:../opg/target/doc/opg/index.html}{函数文档}。
+% uftrace 跟踪函数调用
+\begin{figure}[H]
+    \centering
+    % \rotatebox{90}{
+        \includegraphics[width=\textwidth]{img/flame.png}
+    % }
+    \caption{火焰图\cite{flame}}
+    \label{fig:flame}
+\end{figure}
+
+以上结果由 \href{run:../opg/uftrace.sh}{该脚本} 生成。关于函数的更多信息，请访问 \href{run:../opg/target/doc/opg/index.html}{API 文档}。% 使用 cargo doc 编译。
 
 \part{卷积优化}
 \subsection*{优化结果}

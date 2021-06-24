@@ -1,0 +1,38 @@
+std::rt::lang_start() {
+  std::rt::lang_start::_{{closure}}() {
+    std::sys_common::backtrace::__rust_begin_short_backtrace() {
+      core::ops::function::FnOnce::call_once() {
+        main::main() {                                        // 程序入口
+          main::opg_generate() {                              // 生成函数
+            main::gen_productions();                          // 生成产生式
+            main::gen_non_terminals();                        // 生成非终结符
+            main::gen_firstvt() {                             // 构造 FIRSTVT 集
+              main::dfs::compose_elements() {                 // 聚合元素
+                main::dfs::Dfs::dfs() {                       // DFS 函数
+                  main::dfs::Dfs::dfs_merge() {               // 一进 DFS
+                    main::dfs::Dfs::merge();                  // 一进 DFS 子函数
+                  } /* main::dfs::Dfs::dfs_merge */
+                  main::dfs::Dfs::dfs_conn();                 // 二进 DFS
+                  main::dfs::Dfs::dfs_map();                  // 三进 DFS
+                } /* main::dfs::Dfs::dfs */
+              } /* main::dfs::compose_elements */
+            } /* main::gen_firstvt */
+            main::gen_lastvt() {                              // 构造 LASTVT 集
+              main::dfs::compose_elements() {
+                main::dfs::Dfs::dfs();
+              } /* main::dfs::compose_elements */
+            } /* main::gen_lastvt */
+            main::get_terminals();                            // 生成终结符
+            main::find_eq();                                  // 寻找相等关系
+            main::find_less();                                // 寻找小于关系
+            main::find_greater();                             // 寻找大于关系
+            _<main..table..OpTable as core..fmt..Display>::fmt() {  // 输出
+              main::table::OpTable::to_string();
+            } /* _<main..table..OpTable as core..fmt..Display>::fmt */
+            main::table::OpTable::to_string();
+          } /* main::opg_generate */
+        } /* main::main */
+      } /* core::ops::function::FnOnce::call_once */
+    } /* std::sys_common::backtrace::__rust_begin_short_backtrace */
+  } /* std::rt::lang_start::_{{closure}} */
+} /* std::rt::lang_start */
