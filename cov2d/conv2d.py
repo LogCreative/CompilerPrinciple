@@ -1,11 +1,11 @@
 import tvm
 import numpy as np
-import topi
+import tvm.topi
 from tvm import autotvm
 import logging
 from numbers import Integral
-from topi.nn.util import get_pad_tuple
-from topi.nn.conv2d import conv2d_nchw
+from tvm.topi.nn.utils import get_pad_tuple
+from tvm.topi.nn.conv2d import conv2d_nchw
 from tvm.contrib import util
               
 # 这个函数是需要大家自己补充的，是需要调用各种schedule的原语进行优化的
