@@ -14,3 +14,9 @@
 // This problem has been patched in 0.7.0
 // However, since the source code provided is based on the legacy API
 // The choice should be 0.6.1 to be consist with the guide.
+
+// According to the issue that 
+// LLVM 12.0.0 (April 15) has explict string conversion.
+// https://github.com/apache/tvm/pull/4859
+// Thus an old version of LLVM is needed.
+// Choose LLVM 10.0.0, which is the linux default.
