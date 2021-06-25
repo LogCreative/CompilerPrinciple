@@ -10,3 +10,4 @@ target/
 *.bbl
 *.blg
 cov2d/tvm
+cov2d/llvm

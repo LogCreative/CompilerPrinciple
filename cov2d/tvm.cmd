@@ -1,0 +1,1 @@
+cmake -G "Visual Studio 16 2019" -DCMAKE_BUILD_TYPE=Release -DCMake_CONFIGURATION_TYPES=Release .. -DLLVM_DIR="llvm\llvm\build\lib\cmake\llvm" -DLLVM_LIBS="llvm\llvm\build\Release\lib"
