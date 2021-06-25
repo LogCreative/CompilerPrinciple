@@ -16,7 +16,11 @@
 // The choice should be 0.6.1 to be consist with the guide.
 
 // According to the issue that 
-// LLVM 12.0.0 (April 15) has explict string conversion.
+// LLVM 10.0.0 has explict string conversion.
 // https://github.com/apache/tvm/pull/4859
 // Thus an old version of LLVM is needed.
-// Choose LLVM 10.0.0, which is the linux default.
+// Choose LLVM 9.0.0, which is the linux default.
+
+// However, Ubuntu has to be degraded to 16.04
+// in order to use the pre-compiled binaries
+// provided by LLVM-project.
