@@ -1,11 +1,19 @@
-cd /home/logcreative/下载/apache-tvm-src-v0.6.1.rc1-incubating
-# cd build
-# cmake ..
-# make -j4
-# cd ..
-cd python
-python3 setup.py install --user
+# Since Linux has LLVM built-in
+# Thus no additional LLVM installation needed.
+# Open set(USE_LLVM ON) in config.cmake to compile.
+
+# clone
+git clone --recursive https://github.com/apache/tvm tvm
+cd tvm
+git submodule init
+git submodule update
+
+# compile
+cd build
+cmake ..
+make -j4
+
+# install
 cd ..
-cd topi
 cd python
 python3 setup.py install --user

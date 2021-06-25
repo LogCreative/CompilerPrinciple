@@ -6,7 +6,7 @@ import logging
 from numbers import Integral
 from tvm.topi.nn.utils import get_pad_tuple
 from tvm.topi.nn.conv2d import conv2d_nchw
-from tvm.contrib import util
+from tvm.contrib import utils
               
 # 这个函数是需要大家自己补充的，是需要调用各种schedule的原语进行优化的
 # def schedule(output):
@@ -15,8 +15,12 @@ from tvm.contrib import util
 #ic表示input channel，oc表示output channel      
 def test_topi_conv2d():
     # 声明输入输出的大小
-    n, ic, ih, iw = 1, 3, 32, 32
-    oc, kh, kw = 32, 3, 3
+    # n, ic, ih, iw = 1, 3, 32, 32
+    # oc, kh, kw = 32, 3, 3
+
+    n, ic, ih, iw = 100, 512, 32, 32
+    oc, kh, kw = 1024, 3, 3
+
     dtype = 'float32'
     # 声明卷积的一些参数
     stride_h, stride_w = (1, 1)
@@ -25,14 +29,14 @@ def test_topi_conv2d():
     oh = (ih + 2 *pad_h - kh) // stride_h + 1
     ow = (iw + 2 * pad_w - kw) // stride_w + 1
     # 声明占位符
-    A = tvm.placeholder(shape=(n, ic, ih, iw), dtype=dtype, name='A')
-    B = tvm.placeholder(shape=(oc, ic, kh, kw), dtype=dtype, name='B')
+    A = tvm.te.placeholder(shape=(n, ic, ih, iw), dtype=dtype, name='A')
+    B = tvm.te.placeholder(shape=(oc, ic, kh, kw), dtype=dtype, name='B')
     
     # 调用conv2d_nchw来进行conv2d的计算。
     output = conv2d_nchw(Input = A, Filter = B, stride = (stride_h, stride_w), padding = (pad_h, pad_w), dilation = (dilation_h, dilation_w))
     
     # 这一句是调用tvm默认的schedule函数，表示不加任何优化的schedule
-    s = tvm.create_schedule(output.op)
+    s = tvm.te.create_schedule(output.op)
     
     # 这里需要大家调用tvm有的原语进行loop循环的优化，大家自己去补充
     # s = schedule(output)
@@ -47,7 +51,7 @@ def test_topi_conv2d():
     b_np = np.random.uniform(-1, 1, size=(oc, ic, kh, kw)).astype(dtype)
 
     # 指定底层的运行的硬件
-    ctx = tvm.context("llvm",0) 
+    ctx = tvm.device("llvm",0) 
     d_cpu = tvm.nd.array(np.zeros((n, oc, oh, ow), dtype=dtype), ctx)
 
     # 进行转换
