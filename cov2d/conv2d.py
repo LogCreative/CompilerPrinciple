@@ -10,7 +10,7 @@ from tvm.contrib import utils
               
 # 这个函数是需要大家自己补充的，是需要调用各种schedule的原语进行优化的
 # def schedule(output):
-
+    
         
 #ic表示input channel，oc表示output channel      
 def test_topi_conv2d():
@@ -41,8 +41,13 @@ def test_topi_conv2d():
     # 这里需要大家调用tvm有的原语进行loop循环的优化，大家自己去补充
     # s = schedule(output)
 
+    # using Intel AVX2(Advanced Vector Extensions) ISA for SIMD
+    # To get the best performance, please change the following line
+    # to llvm -mcpu=core-avx2, or specific type of CPU you use
+    Target = "llvm -mcpu=core-avx2"
+
     # 编译生成可执行的模块
-    func_cpu = tvm.build(s, [A, B, output], target="llvm")
+    func_cpu = tvm.build(s, [A, B, output], target=Target)
     # 这个打印进行schedule优化后中间的ir
     print(tvm.lower(s, [A, B, output], simple_mode=True))
 
@@ -51,7 +56,7 @@ def test_topi_conv2d():
     b_np = np.random.uniform(-1, 1, size=(oc, ic, kh, kw)).astype(dtype)
 
     # 指定底层的运行的硬件
-    ctx = tvm.device("llvm",0) 
+    ctx = tvm.device(Target,0) 
     d_cpu = tvm.nd.array(np.zeros((n, oc, oh, ow), dtype=dtype), ctx)
 
     # 进行转换
