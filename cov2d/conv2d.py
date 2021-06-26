@@ -9,17 +9,30 @@ from tvm.topi.nn.conv2d import conv2d_nchw
 from tvm.contrib import utils
               
 # 这个函数是需要大家自己补充的，是需要调用各种schedule的原语进行优化的
-# def schedule(output):
+def schedule(output):
+    s = tvm.te.create_schedule(output.op)
+
+    # bn = 32
+
+    # # Blocking by loop tiling
+    # xo, yo, xi, yi = s[output].tile(output.op.axis[0], output.op.axis[1], bn, bn)
+    # (k,) = s[output].op.reduce_axis
+    # ko, ki = s[output].split(k, factor=4)
+
+    # # Hoist reduction domain outside the blocking loop
+    # s[output].reorder(xo, yo, ko, ki, xi, yi)
+
+    return s
     
         
 #ic表示input channel，oc表示output channel      
 def test_topi_conv2d():
     # 声明输入输出的大小
-    # n, ic, ih, iw = 1, 3, 32, 32
-    # oc, kh, kw = 32, 3, 3
+    n, ic, ih, iw = 1, 3, 32, 32
+    oc, kh, kw = 32, 3, 3
 
-    n, ic, ih, iw = 100, 512, 32, 32
-    oc, kh, kw = 1024, 3, 3
+    # n, ic, ih, iw = 100, 512, 32, 32
+    # oc, kh, kw = 1024, 3, 3
 
     dtype = 'float32'
     # 声明卷积的一些参数
@@ -36,18 +49,13 @@ def test_topi_conv2d():
     output = conv2d_nchw(Input = A, Filter = B, stride = (stride_h, stride_w), padding = (pad_h, pad_w), dilation = (dilation_h, dilation_w))
     
     # 这一句是调用tvm默认的schedule函数，表示不加任何优化的schedule
-    s = tvm.te.create_schedule(output.op)
+    # s = tvm.te.create_schedule(output.op)
     
     # 这里需要大家调用tvm有的原语进行loop循环的优化，大家自己去补充
-    # s = schedule(output)
-
-    # using Intel AVX2(Advanced Vector Extensions) ISA for SIMD
-    # To get the best performance, please change the following line
-    # to llvm -mcpu=core-avx2, or specific type of CPU you use
-    Target = "llvm -mcpu=core-avx2"
+    s = schedule(output)
 
     # 编译生成可执行的模块
-    func_cpu = tvm.build(s, [A, B, output], target=Target)
+    func_cpu = tvm.build(s, [A, B, output], target="llvm")
     # 这个打印进行schedule优化后中间的ir
     print(tvm.lower(s, [A, B, output], simple_mode=True))
 
@@ -56,7 +64,7 @@ def test_topi_conv2d():
     b_np = np.random.uniform(-1, 1, size=(oc, ic, kh, kw)).astype(dtype)
 
     # 指定底层的运行的硬件
-    ctx = tvm.device(Target,0) 
+    ctx = tvm.device("llvm",0) 
     d_cpu = tvm.nd.array(np.zeros((n, oc, oh, ow), dtype=dtype), ctx)
 
     # 进行转换
