@@ -15,15 +15,10 @@ from tvm.contrib import utils
 n, ic, ih, iw = 1, 3, 32, 32
 oc, kh, kw = 32, 3, 3
 
-# # medium batch
-# # target: 240
-# n, ic, ih, iw = 2, 128, 32, 32
-# oc, kh, kw = 256, 3, 3
-
 # # huge batch
 # # target: 197522.4
-n, ic, ih, iw = 100, 512, 32, 32
-oc, kh, kw = 1024, 3, 3
+# n, ic, ih, iw = 100, 512, 32, 32
+# oc, kh, kw = 1024, 3, 3
 
 
 # optimize_on = False
@@ -43,7 +38,6 @@ def schedule(output):
             # 4 threads.
             v_thread = 4
             # split the f dimension
-            n = s[output].op.axis[0]
             fo, fi = s[output].split(s[output].op.axis[1], nparts=v_thread)
 
             # Virtual Multithreading
