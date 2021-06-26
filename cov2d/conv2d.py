@@ -33,7 +33,7 @@ def schedule(output):
         fo, fi = s[output].split(s[output].op.axis[1], factor=fo_factor)
         fio, fii = s[output].split(fi, factor=32)
         # tile the block
-        yo, xo, yi, xi = s[output].tile(s[output].op.axis[2], s[output].op.axis[3], x_factor=8, y_factor=11)
+        yo, xo, yi, xi = s[output].tile(s[output].op.axis[2], s[output].op.axis[3], x_factor=8, y_factor=16)
 
         # Loop reorder
         s[output].reorder(n, fo, fio, fii, yo, xo, yi, xi)
