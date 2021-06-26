@@ -1,13 +1,25 @@
+//! # table
+//!
+//! `table` provides `OpTable`
+//! struct to make insert, output
+//! operation on the operator table.
+
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt::{self, Display, Formatter};
 
+///
+/// A struct of Operation Table.
+///
 pub struct OpTable{
     table: HashMap<(String, String), char>,
     ts: HashSet<String>
 }
 
 impl OpTable {
+    ///
+    /// Create a new `opTable`.
+    ///
     pub fn new(ts: HashSet<String>) -> OpTable {
         OpTable {
             table: HashMap::new(),
@@ -16,7 +28,7 @@ impl OpTable {
     }
 
     ///
-    /// Insert to table
+    /// Insert to table.
     ///
     pub fn insert(&mut self, ttuple: &(String, String), ch: char) {
         if self.table.contains_key(&ttuple) && self.table[&ttuple] != ch {
@@ -27,7 +39,7 @@ impl OpTable {
     }
 
     ///
-    /// Convert table to string
+    /// Convert table to string.
     ///
     pub fn to_string(&self) -> String{
         let mut output:String = "".to_owned();
@@ -55,6 +67,10 @@ impl OpTable {
 }
 
 impl Display for OpTable {
+    ///
+    /// Define the behavior of outputting
+    /// an `opTable` struct.
+    ///
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let output = self.to_string();
         write!(f, "{}", output)

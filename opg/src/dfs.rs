@@ -1,6 +1,16 @@
+//! # dfs
+//!
+//! `dfs` provides the way to make 
+//! three different Depth-First Search
+//! ways on the graph.
+
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+///
+/// A struct to make DFS movement
+/// in an OOP code style.
+///
 struct Dfs {
     mono: HashMap<String, HashSet<String>>,
     con: HashMap<String, HashSet<String>>,

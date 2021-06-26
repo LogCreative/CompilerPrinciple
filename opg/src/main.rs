@@ -1,3 +1,8 @@
+//! # Operator Precedence Grammar Parser
+//!
+//! `opg` reads an context-free grammar input 
+//! and outputs the precedence of the operators.
+
 mod dfs;
 mod table;
 
@@ -6,8 +11,14 @@ use std::collections::HashSet;
 use std::env;
 use std::fs;
 
+///
+/// A struct to 
+/// represent a production.
+///
 struct Production {
+    /// the left side of the production.
     left: String,
+    /// the right side of the production.
     right: Vec<String>,
 }
 
@@ -15,6 +26,30 @@ struct Production {
 /// Generate FIRSTVT set for
 /// every non-terminals.
 ///
+/// ## Input
+/// `productions` the vector of struct `Production`
+///
+/// `nts` the non-terminal set, which could be generated 
+/// from the function `get_non_terminals()`. 
+///
+/// ## Return
+/// `firstvt` the set of FIRSTVT
+/// for all terminals.
+///
+/// ## Example
+/// ```
+///  let firstvt:HashMap<String, HashSet<String>> = gen_firstvt(&productions, &nts);
+/// ```
+///
+/// ## Principles
+/// Go through every production
+/// and search the following patterns:
+/// 1. U => U_1y
+/// 2. U => U_1Ty
+/// 3. U => Ty
+///
+/// call `dfs::compose_element()` 
+/// to get the final result.
 fn gen_firstvt(
     productions: &Vec<Production>,
     nts: &HashSet<String>,
@@ -54,6 +89,30 @@ fn gen_firstvt(
 /// Generate LASTVT set for
 /// every non-terminals.
 ///
+/// ## Input
+/// `productions` the vector of struct `Production`
+///
+/// `nts` the non-terminal set, which could be generated 
+/// from the function `get_non_terminals()`. 
+///
+/// ## Return
+/// `lastvt` the set of LASTVT
+/// for all terminals.
+///
+/// ## Example
+/// ```
+///  let lastvt:HashMap<String, HashSet<String>> = gen_lastvt(&productions, &nts);
+/// ```
+///
+/// ## Principles
+/// Go through every production
+/// and search the following patterns:
+/// 1. U => xU_1
+/// 2. U => xTU_1
+/// 3. U => xT
+///
+/// call `dfs::compose_element()` 
+/// to get the final result.
 fn gen_lastvt(
     productions: &Vec<Production>,
     nts: &HashSet<String>,
