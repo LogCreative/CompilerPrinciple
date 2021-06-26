@@ -21,7 +21,9 @@ def schedule(output):
         # the efficiency could be improved by
         # Virtual Multithreading
         # the computation could be distributed to
-        # 2 or 4 threads.
+        # 4 threads.
+        # set the factor to 256, which is a threashold 
+        # only available for huge set but not the small set.
         # 1024 / 4 = 256
         fo_factor = 256
 
@@ -29,9 +31,16 @@ def schedule(output):
         # split the f dimension
         n = s[output].op.axis[0]
         fo, fi = s[output].split(s[output].op.axis[1], factor=fo_factor)
-        # fio, fii = s[output].split(fi, factor=32)
-        # yo, yi, xo, xi = s[output].tile(s[output].op.axis[2], s[output].op.axis[3], x_factor=8, y_factor=8)
+        fio, fii = s[output].split(fi, factor=32)
+        yo, yi, xo, xi = s[output].tile(s[output].op.axis[2], s[output].op.axis[3], x_factor=8, y_factor=8)
+
+        # Vectorization
+        s[output].vectorize(xi)
+
+        # Loop reorder
         
+        
+        # Virtual Multithreading
         s[output].bind(fo, tvm.te.thread_axis("cthread"))
 
     return s
