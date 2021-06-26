@@ -1,4 +1,5 @@
 # Since Linux has LLVM built-in
+# Update Linux's LLVM to the lateset version 10
 # Thus no additional LLVM installation needed.
 # Open set(USE_LLVM ON) in config.cmake to compile.
 

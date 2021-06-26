@@ -12,15 +12,27 @@ from tvm.contrib import utils
 def schedule(output):
     s = tvm.te.create_schedule(output.op)
 
-    # bn = 32
 
-    # # Blocking by loop tiling
-    # xo, yo, xi, yi = s[output].tile(output.op.axis[0], output.op.axis[1], bn, bn)
-    # (k,) = s[output].op.reduce_axis
-    # ko, ki = s[output].split(k, factor=4)
+    # tile is not the main factor
+    # for small sizes.
 
-    # # Hoist reduction domain outside the blocking loop
-    # s[output].reorder(xo, yo, ko, ki, xi, yi)
+    # xo, yo, xi, yi = s[output].tile(output.op.axis[0], output.op.axis[1], x_factor=1, y_factor=32)
+    # s[output].reorder(xi, yi, yo, xo)
+
+    # fo, fi = s[output].split(output.op.axis[0], nparts=4)
+    # s[output].fuse(yo, yi)
+
+    # fo, fi = s[output].split(output.op.axis[1], nparts=4)
+    # yo, xo, yi, xi = s[output].tile(output.op.axis[2], output.op.axis[3], x_factor=8, y_factor=8)
+    # s[output].reorder(fo, fi, xo, xi, yo, yi)
+    # s[output].fuse(xo, yi)
+
+    # fused = s[output].fuse(xi, yi)
+
+    v_thread = 4
+
+    fo, fi = s[output].split(output.op.axis[1], nparts=v_thread)
+    s[output].bind(fo, tvm.te.thread_axis("cthread"))
 
     return s
     
@@ -28,8 +40,11 @@ def schedule(output):
 #ic表示input channel，oc表示output channel      
 def test_topi_conv2d():
     # 声明输入输出的大小
-    n, ic, ih, iw = 1, 3, 32, 32
-    oc, kh, kw = 32, 3, 3
+    # n, ic, ih, iw = 1, 3, 32, 32
+    # oc, kh, kw = 32, 3, 3
+
+    n, ic, ih, iw = 2, 128, 32, 32
+    oc, kh, kw = 256, 3, 3
 
     # n, ic, ih, iw = 100, 512, 32, 32
     # oc, kh, kw = 1024, 3, 3

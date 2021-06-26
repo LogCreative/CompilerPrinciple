@@ -12,7 +12,7 @@
 \lstset{basicstyle=\ttfamily, frame=single, columns=flexible, extendedchars=false}
 \bibliographystyle{IEEEtran}
 \title{\normalsize\underline{编译原理(A)大作业}\\\Large 算符优先分析表和卷积优化}
-\author{李子龙 518070910095 [独立完成]}
+\author{李子龙 518070910095 [单人完成]}
 \begin{document}
     \maketitle 
     \tableofcontents
@@ -203,8 +203,8 @@
 
 \part{卷积优化}
 \subsection*{运行截图}
-\begin{figure}
-    \centering
+\begin{figure}[H]
+	\centering
     \includegraphics[width=\textwidth]{img/raw1.png}
 \end{figure}
 
@@ -217,20 +217,18 @@
         \ttfamily
         n, ic, ih, iw = 1, 3, 32, 32~~~~~
         oc, kh, kw = 32, 3, 3
-        & & & \\
+        & 0.187121 ms & & \\
         \hline
         \ttfamily
         n, ic, ih, iw = 100, 512, 32, 32
         oc, kh, kw = 1024, 3, 3
-        & & & \\
+        & 493806.119851 ms & & \\
         \bottomrule
     \end{tabular}
 \end{table}
 
 % raw 2-1: 493806.119851 ms
 % raw 2-2: 496377.535468 ms
-
-% 使用 
 
 \bibliography{ref}
 
