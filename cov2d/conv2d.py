@@ -33,7 +33,7 @@ def schedule(output):
         fo, fi = s[output].split(s[output].op.axis[1], factor=fo_factor)
         fio, fii = s[output].split(fi, factor=32)
         # tile the block
-        yo, xo, yi, xi = s[output].tile(s[output].op.axis[2], s[output].op.axis[3], x_factor=8, y_factor=8)
+        yo, xo, yi, xi = s[output].tile(s[output].op.axis[2], s[output].op.axis[3], x_factor=8, y_factor=16)
 
         # Loop reorder
         s[output].reorder(n, fo, fio, fii, yo, xo, yi, xi)
@@ -55,13 +55,13 @@ def test_topi_conv2d():
 
     # # small batch
     # # target: 0.072
-    n, ic, ih, iw = 1, 3, 32, 32
-    oc, kh, kw = 32, 3, 3
+    # n, ic, ih, iw = 1, 3, 32, 32
+    # oc, kh, kw = 32, 3, 3
 
     # # medium batch
     # # target: 240
-    # n, ic, ih, iw = 2, 128, 32, 32
-    # oc, kh, kw = 256, 3, 3
+    n, ic, ih, iw = 2, 128, 32, 32
+    oc, kh, kw = 256, 3, 3
 
     # # huge batch
     # # target: 197522.4
