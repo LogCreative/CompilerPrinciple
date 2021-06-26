@@ -8,31 +8,31 @@ from tvm.topi.nn.utils import get_pad_tuple
 from tvm.topi.nn.conv2d import conv2d_nchw
 from tvm.contrib import utils
               
+# optimize_on = False
+optimize_on = True
+
 # 这个函数是需要大家自己补充的，是需要调用各种schedule的原语进行优化的
 def schedule(output):
     s = tvm.te.create_schedule(output.op)
 
+    if(optimize_on):
 
-    # tile is not the main factor
-    # for small sizes.
+        # For large matrix,
+        # the efficiency could be improved by
+        # Virtual Multithreading
+        # the computation could be distributed to
+        # 2 or 4 threads.
+        # 1024 / 4 = 256
+        fo_factor = 256
 
-    # xo, yo, xi, yi = s[output].tile(output.op.axis[0], output.op.axis[1], x_factor=1, y_factor=32)
-    # s[output].reorder(xi, yi, yo, xo)
-
-    # fo, fi = s[output].split(output.op.axis[0], nparts=4)
-    # s[output].fuse(yo, yi)
-
-    # fo, fi = s[output].split(output.op.axis[1], nparts=4)
-    # yo, xo, yi, xi = s[output].tile(output.op.axis[2], output.op.axis[3], x_factor=8, y_factor=8)
-    # s[output].reorder(fo, fi, xo, xi, yo, yi)
-    # s[output].fuse(xo, yi)
-
-    # fused = s[output].fuse(xi, yi)
-
-    v_thread = 4
-
-    fo, fi = s[output].split(output.op.axis[1], nparts=v_thread)
-    s[output].bind(fo, tvm.te.thread_axis("cthread"))
+        # For small matrix
+        # split the f dimension
+        n = s[output].op.axis[0]
+        fo, fi = s[output].split(s[output].op.axis[1], factor=fo_factor)
+        # fio, fii = s[output].split(fi, factor=32)
+        # yo, yi, xo, xi = s[output].tile(s[output].op.axis[2], s[output].op.axis[3], x_factor=8, y_factor=8)
+        
+        s[output].bind(fo, tvm.te.thread_axis("cthread"))
 
     return s
     
@@ -40,12 +40,19 @@ def schedule(output):
 #ic表示input channel，oc表示output channel      
 def test_topi_conv2d():
     # 声明输入输出的大小
-    # n, ic, ih, iw = 1, 3, 32, 32
-    # oc, kh, kw = 32, 3, 3
 
-    n, ic, ih, iw = 2, 128, 32, 32
-    oc, kh, kw = 256, 3, 3
+    # # small batch
+    # # target: 0.072
+    n, ic, ih, iw = 1, 3, 32, 32
+    oc, kh, kw = 32, 3, 3
 
+    # medium batch
+    # target: 240
+    # n, ic, ih, iw = 2, 128, 32, 32
+    # oc, kh, kw = 256, 3, 3
+
+    # huge batch
+    # target: 197522.4
     # n, ic, ih, iw = 100, 512, 32, 32
     # oc, kh, kw = 1024, 3, 3
 
