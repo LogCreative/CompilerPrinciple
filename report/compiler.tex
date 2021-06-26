@@ -22,7 +22,7 @@
 \subsection*{运行环境}
 \begin{tabular}{ll}
     操作系统 & Windows \\
-    语言 & Rust\cite{SteveKlabnik2019} \\
+    语言 & Rust 2018\cite{SteveKlabnik2019} \\
 \end{tabular}
 \vspace*{1em}
 \begin{lstlisting}[frameround=fttt]
@@ -171,7 +171,7 @@
 
 \subsection{识别关系}
 
-最后一步，就是根据定义 \ref{def:opn} 来遍历产生式检测终结符号之间的优先关系了。在识别之前，需要现在产生式的集合中加入对于开始符号的输入首尾标记：
+最后一步，就是根据定义 \ref{def:opn} 来遍历产生式检测终结符号之间的优先关系了。在识别之前，需要先在产生式的集合中加入对于开始符号的输入首尾标记：
 \begin{equation*}
     E \rightarrow \$ E \$
 \end{equation*}
@@ -282,6 +282,8 @@ numbersep=5pt}
 运行环境有 4 个核，所以会将线程数设置为 4。而为了让底层编译出正确的多线程代码，将不会使用下面的优化方式，否则会导致线程复杂而没有产生优化的效果。
 
 \subsection{较小数据输入}
+
+\lstset{numbers=none}
 
 较小的数据输入如果使用多线程将会因为上下文切换产生过多的时间增长，产生负效应，这里参考 \cite{cpu} 以对循环结构做基础的优化。
 
