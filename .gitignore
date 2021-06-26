@@ -15,3 +15,5 @@ cov2d/tvm*
 *_py3
 *_latexmk
 *.xdv
+*.fls
+*.dvi
