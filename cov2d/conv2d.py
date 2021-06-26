@@ -38,7 +38,7 @@ def schedule(output):
         # Loop reorder
         s[output].reorder(n, fo, fio, fii, yo, xo, yi, xi)
         
-        # s[output].fuse(xo, yi)
+        s[output].unroll(yi)
 
         # Vectorization
         s[output].vectorize(xi)
@@ -58,13 +58,13 @@ def test_topi_conv2d():
     n, ic, ih, iw = 1, 3, 32, 32
     oc, kh, kw = 32, 3, 3
 
-    # medium batch
-    # target: 240
+    # # medium batch
+    # # target: 240
     # n, ic, ih, iw = 2, 128, 32, 32
     # oc, kh, kw = 256, 3, 3
 
-    # huge batch
-    # target: 197522.4
+    # # huge batch
+    # # target: 197522.4
     # n, ic, ih, iw = 100, 512, 32, 32
     # oc, kh, kw = 1024, 3, 3
 
