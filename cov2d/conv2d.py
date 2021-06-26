@@ -8,8 +8,8 @@ from tvm.topi.nn.utils import get_pad_tuple
 from tvm.topi.nn.conv2d import conv2d_nchw
 from tvm.contrib import utils
               
-# optimize_on = False
-optimize_on = True
+optimize_on = False
+# optimize_on = True
 
 # 这个函数是需要大家自己补充的，是需要调用各种schedule的原语进行优化的
 def schedule(output):
@@ -47,10 +47,6 @@ def schedule(output):
 
         # Vectorization
         s[output].vectorize(xi)
-
-        # s[output].parallel(fo)
-
-        # s[output].fuse(yo, xo)
         
         # Virtual Multithreading
         s[output].bind(fo, tvm.te.thread_axis("cthread"))
