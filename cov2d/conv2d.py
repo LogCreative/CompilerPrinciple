@@ -17,7 +17,7 @@ def schedule(output):
 
     if(optimize_on):
 
-        # For large matrix,
+        ## For large matrix,
         # the efficiency could be improved by
         # Virtual Multithreading
         # the computation could be distributed to
@@ -27,11 +27,15 @@ def schedule(output):
         # 1024 / 4 = 256
         fo_factor = 256
 
-        # For small matrix
+        ## For small matrix
         # split the f dimension
         n = s[output].op.axis[0]
         fo, fi = s[output].split(s[output].op.axis[1], factor=fo_factor)
+        
+        # This step is not useful for all input with size 32
+        # Just in case that the input size is very large.
         fio, fii = s[output].split(fi, factor=32)
+
         # tile the block
         yo, xo, yi, xi = s[output].tile(s[output].op.axis[2], s[output].op.axis[3], x_factor=8, y_factor=16)
 
@@ -43,6 +47,10 @@ def schedule(output):
 
         # Vectorization
         s[output].vectorize(xi)
+
+        # s[output].parallel(fo)
+
+        # s[output].fuse(yo, xo)
         
         # Virtual Multithreading
         s[output].bind(fo, tvm.te.thread_axis("cthread"))
