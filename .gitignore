@@ -12,3 +12,4 @@ target/
 cov2d/tvm
 cov2d/llvm
 cov2d/tvm*
+*_py3
