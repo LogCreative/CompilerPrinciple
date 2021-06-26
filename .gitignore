@@ -9,11 +9,12 @@ target/
 *.lock
 *.bbl
 *.blg
-cov2d/tvm
-cov2d/llvm
-cov2d/tvm*
+conv2d/tvm
+conv2d/llvm
+conv2d/tvm*
 *_py3
 *_latexmk
 *.xdv
 *.fls
 *.dvi
+*.pdf

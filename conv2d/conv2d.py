@@ -20,7 +20,7 @@ oc, kh, kw = 32, 3, 3
 # n, ic, ih, iw = 100, 512, 32, 32
 # oc, kh, kw = 1024, 3, 3
 
-
+# 优化启用开关
 # optimize_on = False
 optimize_on = True
 

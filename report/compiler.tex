@@ -12,7 +12,7 @@
 \lstset{basicstyle=\ttfamily, frame=single, columns=flexible, extendedchars=false}
 \bibliographystyle{IEEEtran}
 \title{\normalsize\underline{编译原理(A)大作业}\\\Large 算符优先分析表和卷积优化}
-\author{李子龙 518070910095 [单人完成]}
+\author{李子龙 518070910095}
 \begin{document}
     \maketitle 
     \tableofcontents
@@ -187,7 +187,7 @@
 
 以下是运行样例 1 时由 uftrace\cite{uft} 生成的函数调用列表。
 % 接口调用
-\lstinputlisting[language=c,basicstyle=\scriptsize\ttfamily, commentstyle=\color{green!50!black}]{img/replay.txt}
+\lstinputlisting[language=c,basicstyle=\scriptsize\ttfamily, commentstyle=\color{green!50!black}]{code/replay.txt}
 
 % uftrace 跟踪函数调用
 \begin{figure}[H]
@@ -201,14 +201,31 @@
 
 以上结果由 \href{run:../opg/uftrace.sh}{该脚本} 生成。关于函数的更多信息，请访问 \href{run:../opg/target/doc/opg/index.html}{API 文档}。% 使用 cargo doc 编译。
 
+\vspace*{5em}
+
 \part{卷积优化}
+\subsection*{运行环境}
+\begin{tabular}{ll}
+    操作系统 & Ubuntu 20.04 LTS 64 位\\
+    内存 & 15.6 GiB \\
+    处理器 & Intel$^\circledR$ Core$^{\rm TM}$ i7-7660U CPU @ 2.50GHz $\times$ 4\\
+    &\\
+    L1 Cache & 4 KiB $\times$ 2 \\
+    L2 Cache & 32 KiB \\
+    L3 Cache & 4 MiB \\
+    &\\
+    TVM 版本 & 0.8dev0 \\
+    LLVM 版本 & 10.0.0 \\
+    Python 版本 & 3.8 \\
+\end{tabular}
+
 \subsection*{运行截图}
 \begin{figure}[H]
     \centering
-    \subfigure[raw1]{\includegraphics[width=0.45\textwidth]{img/raw1.png}}
-    \subfigure[op1]{\includegraphics[width=0.45\textwidth]{img/op1.png}}
-    \subfigure[raw2]{\includegraphics[width=0.45\textwidth]{img/raw2.png}}
-    \subfigure[op2]{\includegraphics[width=0.45\textwidth]{img/op2.png}}
+    \subfigure[样例 1 未优化]{\includegraphics[width=0.45\textwidth]{img/raw1.png}}
+    \subfigure[样例 1 优化后]{\includegraphics[width=0.45\textwidth]{img/op1.png}}
+    \subfigure[样例 2 未优化]{\includegraphics[width=0.45\textwidth]{img/raw2.png}}
+    \subfigure[样例 2 优化后]{\includegraphics[width=0.45\textwidth]{img/op2.png}}
 \end{figure}
 
 \subsection*{优化结果}
@@ -233,7 +250,64 @@
 % raw 2-1: 493806.119851 ms
 % raw 2-2: 496377.535468 ms
 
+\section{源代码}
+
+全部源码请见 \verb"conv2d/conv2d.py"。
+
+\lstset{language=python,basicstyle=\scriptsize\ttfamily, keywordstyle=\color{blue}, commentstyle=\color{green!50!black}, breaklines, numbers=left,
+numberstyle=\color{gray}\ttfamily\scriptsize,
+numbersep=5pt}
+
+由于采用了 0.8 版本的 TVM，引用包的方式发生了变化。
+
+\lstinputlisting[firstnumber=1,firstline=1,lastline=10]{../conv2d/conv2d.py}
+
+将大小定义提前，因为需要通过大小判定优化方式。
+
+\lstinputlisting[firstnumber=10,firstline=10,lastline=22]{../conv2d/conv2d.py}
+
+下面就是优化的 \verb"schedule" 函数。
+
+\lstinputlisting[firstnumber=24,firstline=24,lastline=69, basicstyle=\normalsize\ttfamily]{../conv2d/conv2d.py}
+
+\section{优化原理}
+
+根据数据大小的不同，分为两种情况。
+
+\subsection{较大数据输入}
 % Virtual Multithreading for large matrix
+
+较大的数据输入一般是因为只能使用一个核运行的缘故导致时间较长。这里参考 \cite{vta} 以使用 虚拟多线程 (Virtual Threading) 机制以多线程对数据进行分裂 (fission)，因为卷积计算数据间没有依赖关系。
+
+运行环境有 4 个核，所以会将线程数设置为 4。而为了让底层编译出正确的多线程代码，将不会使用下面的优化方式，否则会导致线程复杂而没有产生优化的效果。
+
+\subsection{较小数据输入}
+
+较小的数据输入如果使用多线程将会因为上下文切换产生过多的时间增长，产生负效应，这里参考 \cite{cpu} 以对循环结构做基础的优化。
+
+\lstinputlisting[language=c]{code/loop.txt}
+
+先使用 \verb"tile" 原语分块处理两个轴 \verb"yy" 和 \verb"xx"，然后使用 \verb"reorder" 原语重新排序：
+
+\lstinputlisting[language=c]{code/loopopt.txt}
+
+对最内层的 \verb"xi" 采用 \verb"vectorize" 原语进行向量化，正好是 64 位的宽度（16$\times$ 4 位=64 位），也是缓存的行大小，达到最优状态。
+
+对次内层的 \verb"yi" 采用 \verb"unroll" 原语循环展开，这样可以保证优化性能的稳定。实验证明，如果不展开，其优化结果的方差较大。
+
+其余的常见优化原语已经不会帮助性能的提高，仅针对 \verb"output" 优化至此。最内核的卷积核本文不考虑其优化问题。
+
+\subsection*{安装 TVM}
+
+TVM 尚处于开发阶段，会有一些 API 更改。原始文件基于 TVM 0.6.1 版本，由于操作系统较新，其 LLVM 版本较高以致于删除了字符串转换函数\cite{issue}，不能顺利编译老版源文件。故采用 0.8.0 版本。
+
+不能使用 GCC 编译，静态编译会导致定义冲突，并且会导致 TVM 的一些特性无法使用，任何报错初始化报错都应当认为是没有使用 Clang + LLVM 编译导致的。更改 \verb"config.cmake" 中的 \verb"Set(LLVM ON)" 以解决这个问题。
+
+Windows 版本曾经尝试采用 Visual Studio 2019 编译。在 LLVM 12.0.0 下，0.8dev0 版本 TOPI 编译失败，0.6.1 版本都编译失败。而且 Windows 会跳过 VTA 的编译。
+
+\subsection*{分工}
+
+单人独立完成。
 
 \bibliography{ref}
 
