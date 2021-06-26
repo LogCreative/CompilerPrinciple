@@ -8,6 +8,24 @@ from tvm.topi.nn.utils import get_pad_tuple
 from tvm.topi.nn.conv2d import conv2d_nchw
 from tvm.contrib import utils
               
+# 声明输入输出的大小
+
+# small batch
+# target: 0.072
+n, ic, ih, iw = 1, 3, 32, 32
+oc, kh, kw = 32, 3, 3
+
+# # medium batch
+# # target: 240
+# n, ic, ih, iw = 2, 128, 32, 32
+# oc, kh, kw = 256, 3, 3
+
+# # huge batch
+# # target: 197522.4
+n, ic, ih, iw = 100, 512, 32, 32
+oc, kh, kw = 1024, 3, 3
+
+
 # optimize_on = False
 optimize_on = True
 
@@ -17,62 +35,47 @@ def schedule(output):
 
     if(optimize_on):
 
-        ## For large matrix,
-        # the efficiency could be improved by
-        # Virtual Multithreading
-        # the computation could be distributed to
-        # 4 threads.
-        # set the factor to 256, which is a threashold 
-        # only available for huge set but not the small set.
-        # 1024 / 4 = 256
-        fo_factor = 256
+        if oc > 256 :
+            ## For large matrix,
+            # the efficiency could be improved by
+            # Virtual Multithreading
+            # the computation could be distributed to
+            # 4 threads.
+            v_thread = 4
+            # split the f dimension
+            n = s[output].op.axis[0]
+            fo, fi = s[output].split(s[output].op.axis[1], nparts=v_thread)
 
-        ## For small matrix
-        # split the f dimension
-        n = s[output].op.axis[0]
-        fo, fi = s[output].split(s[output].op.axis[1], nparts=4)
-        
-        # This step is not useful for all input with size 32
-        # Just in case that the input size is very large.
-        fio, fii = s[output].split(fi, factor=32)
+            # Virtual Multithreading
+            s[output].bind(fo, tvm.te.thread_axis("cthread"))
+        else:
+            ## For small matrix
+            # no multi-threading
+            v_thread = 1
+            # split the f dimension
+            n = s[output].op.axis[0]
+            fo, fi = s[output].split(s[output].op.axis[1], nparts=v_thread)
+            # This step is not useful for all input with size 32
+            # Just in case that the input size is very large.
+            fio, fii = s[output].split(fi, factor=32)
 
-        # tile the block
-        yo, xo, yi, xi = s[output].tile(s[output].op.axis[2], s[output].op.axis[3], x_factor=8, y_factor=16)
+            # tile the block
+            yo, xo, yi, xi = s[output].tile(s[output].op.axis[2], s[output].op.axis[3], x_factor=8, y_factor=16)
 
-        # Loop reorder
-        s[output].reorder(n, fo, fio, fii, yo, xo, yi, xi)
-        
-        # Unrolling
-        s[output].unroll(yi)
+            # Loop reorder
+            s[output].reorder(n, fo, fio, fii, yo, xo, yi, xi)
+            
+            # Unrolling
+            s[output].unroll(yi)
 
-        # Vectorization
-        s[output].vectorize(xi)
-
-        # Virtual Multithreading
-        s[output].bind(fo, tvm.te.thread_axis("cthread"))
+            # Vectorization
+            s[output].vectorize(xi)
 
     return s
     
         
 #ic表示input channel，oc表示output channel      
 def test_topi_conv2d():
-    # 声明输入输出的大小
-
-    # # small batch
-    # # target: 0.072
-    # n, ic, ih, iw = 1, 3, 32, 32
-    # oc, kh, kw = 32, 3, 3
-
-    # # medium batch
-    # # target: 240
-    # n, ic, ih, iw = 2, 128, 32, 32
-    # oc, kh, kw = 256, 3, 3
-
-    # huge batch
-    # target: 197522.4
-    n, ic, ih, iw = 100, 512, 32, 32
-    oc, kh, kw = 1024, 3, 3
-
     dtype = 'float32'
     # 声明卷积的一些参数
     stride_h, stride_w = (1, 1)
