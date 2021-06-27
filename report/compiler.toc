@@ -1,0 +1,15 @@
+\contentsline {part}{第一部分\hspace {1em}算符优先分析表}{2}{part.1}%
+\contentsline {section}{\numberline {1}题目分析}{3}{section.1}%
+\contentsline {section}{\numberline {2}算法描述}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}集合依赖关系}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}三进 DFS}{4}{subsection.2.2}%
+\contentsline {paragraph}{一进 DFS：归并分类}{4}{paragraph*.8}%
+\contentsline {paragraph}{二进 DFS：连接消环}{5}{paragraph*.9}%
+\contentsline {paragraph}{三进 DFS：映射输出}{5}{paragraph*.10}%
+\contentsline {subsection}{\numberline {2.3}识别关系}{5}{subsection.2.3}%
+\contentsline {section}{\numberline {3}函数接口}{6}{section.3}%
+\contentsline {part}{第二部分\hspace {1em}卷积优化}{7}{part.2}%
+\contentsline {section}{\numberline {4}源代码}{8}{section.4}%
+\contentsline {section}{\numberline {5}优化原理}{11}{section.5}%
+\contentsline {subsection}{\numberline {5.1}较大数据输入}{11}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}较小数据输入}{11}{subsection.5.2}%
