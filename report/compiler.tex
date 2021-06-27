@@ -209,6 +209,7 @@
     操作系统 & Ubuntu 20.04 LTS 64 位\\
     内存 & 15.6 GiB \\
     处理器 & Intel$^\circledR$ Core$^{\rm TM}$ i7-7660U CPU @ 2.50GHz $\times$ 4\\
+    图形 & Mesa Intel$^\circledR$ Iris$^\circledR$ Plus Graphics 640 \\
     &\\
     L1 Cache & 4 KiB $\times$ 2 \\
     L2 Cache & 32 KiB \\
@@ -277,9 +278,9 @@ numbersep=5pt}
 \subsection{较大数据输入}
 % Virtual Multithreading for large matrix
 
-较大的数据输入一般是因为只能使用一个核运行的缘故导致时间较长。这里参考 \cite{vta} 以使用 虚拟多线程 (Virtual Threading) 机制以多线程对数据进行分裂 (fission)，因为卷积计算数据间没有依赖关系。
+较大的数据输入一般是因为只能使用一个核运行的缘故导致时间较长。这里参考 \cite{vta} 以使用虚拟多线程 (Virtual Threading) 机制以多线程对数据进行分裂 (fission)，因为卷积计算数据间没有依赖关系。这里使用了 VTA。
 
-运行环境有 4 个核，所以会将线程数设置为 4。而为了让底层编译出正确的多线程代码，将不会使用下面的优化方式，否则会导致线程复杂而没有产生优化的效果。
+将线程数设置为 4。而为了让底层编译出正确的多线程代码，将不会使用下面的优化方式，否则会导致线程复杂而没有产生优化的效果。
 
 \subsection{较小数据输入}
 
@@ -305,7 +306,7 @@ TVM 尚处于开发阶段，会有一些 API 更改。原始文件基于 TVM 0.6
 
 不能使用 GCC 编译，静态编译会导致定义冲突，并且会导致 TVM 的一些特性无法使用，任何报错初始化报错都应当认为是没有使用 Clang + LLVM 编译导致的。更改 \verb"config.cmake" 中的 \verb"Set(LLVM ON)" 以解决这个问题。
 
-Windows 版本曾经尝试采用 Visual Studio 2019 编译。在 LLVM 12.0.0 下，0.8dev0 版本 TOPI 编译失败，0.6.1 版本都编译失败。而且 Windows 会跳过 VTA 的编译。
+Windows 版本曾经尝试采用 Visual Studio 2019 编译。在 LLVM 12.0.0 下，0.8dev0 版本 TOPI 编译失败，0.6.1 版本都编译失败。而且 Windows 会跳过 VTA 的编译，这与较大块的优化相关。
 
 \subsection*{分工}
 

@@ -1,6 +1,6 @@
 [package]
 name = "opg"
-version = "1.0.0"
+version = "1.1.0"
 authors = ["LogCreative <logcreative-lzl@sjtu.edu.cn>"]
 edition = "2018"
 
