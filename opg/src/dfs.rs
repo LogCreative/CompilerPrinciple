@@ -10,6 +10,7 @@ use std::collections::HashSet;
 ///
 /// A struct to make DFS movement
 /// in an OOP code style.
+/// And perform DFS in a recurrent way.
 ///
 struct Dfs {
     mono: HashMap<String, HashSet<String>>,
@@ -166,7 +167,37 @@ impl Dfs {
 }
 
 ///
-/// Compose the elements from mono and con
+/// Compose the elements from mono and con.
+///
+/// ## Input
+/// `mono` the direct relation for terminals and non-terminals.
+///
+/// `con` the inherit relation between non-terminals.
+///
+/// ## Return
+/// A Hashmap of VT.
+///
+/// ## Example
+/// ```
+/// let firstvt = dfs::compose_elements(&firstvtmono, &firstvtcon);
+/// ```
+/// 
+/// ## Principles
+/// By create new `Dfs` struct and call `dfs()` function,
+/// the following process is proceed:
+/// - The first DFS: `dfs_merge()` will use
+/// a union-find way to detect the non-terminals like 
+/// `
+/// S1 subseteq S2 subseteq ... subseteq Sn subseteq S1
+/// `
+/// and make them in the same category.
+/// - The second DFS: `dfs_conn()` will make connections
+/// between the categories detected in the previous stage.
+/// After this stage, there will be no loop in the dependency
+/// graph, i.e., a tree.
+/// - The third DFS: `dfs_map()` will perform DFS
+/// on every non-terminals in the category relation tree
+/// to get the corresponding VT set for the non-terminal.
 ///
 pub fn compose_elements(
     mono: &HashMap<String, HashSet<String>>,

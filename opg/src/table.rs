@@ -12,7 +12,9 @@ use std::fmt::{self, Display, Formatter};
 /// A struct of Operation Table.
 ///
 pub struct OpTable{
+    /// The hashmap of relation.
     table: HashMap<(String, String), char>,
+    /// The terminal set in the grammar.
     ts: HashSet<String>
 }
 
@@ -29,6 +31,12 @@ impl OpTable {
 
     ///
     /// Insert to table.
+    ///
+    /// ## Principles
+    /// Try to insert the a tuple with `ch` relation.
+    /// If it is occupied and not equal to the relation
+    /// to be inserted, then the grammar is ambiguous
+    /// and the panic will be fired.
     ///
     pub fn insert(&mut self, ttuple: &(String, String), ch: char) {
         if self.table.contains_key(&ttuple) && self.table[&ttuple] != ch {
