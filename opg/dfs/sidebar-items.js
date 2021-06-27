@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["compose_elements","Compose the elements from mono and con."]],"struct":[["Dfs","A struct to make DFS movement in an OOP code style. And perform DFS in a recurrent way."]]});
