@@ -4,7 +4,7 @@
 
 ## 算符优先分析表
 
-[【API 文档】](opg/target/doc/opg/index.html)
+[【API 文档】](https://logcreative.github.io/CompilerPrinciple/)
 
 使用命令提示符
 ```
