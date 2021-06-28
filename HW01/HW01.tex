@@ -1,0 +1,44 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}     %先引入ctex
+\usepackage[utf8]{inputenc} %再引入inputenc
+\usepackage{graphicx}
+% \usepackage{lazylatex}
+% \tcbuselibrary{documentation}
+\usepackage{amsmath}
+\usepackage{bookmark}
+\usepackage{enumerate}
+\usepackage{geometry}
+\graphicspath{{img/}}
+% 边距
+\geometry{left=2.0cm,right=2.0cm,top=2.0cm,bottom=3.0cm}
+% 大题
+\newenvironment{problems}{\begin{list}{}{\renewcommand{\makelabel}[1]{\textbf{##1}\hfil}}}{\end{list}}
+% 小题
+\newenvironment{steps}{\begin{list}{}{\renewcommand{\makelabel}[1]{##1.\hfil}}}{\end{list}}
+% 答
+\providecommand{\ans}{\textbf{答}:~}
+% 解
+\providecommand{\sol}{\textbf{解}.~}
+
+\begin{document}
+\title{\normalsize \underline{编译原理(A)}\\\LARGE第 1 次作业}
+\author{Log Creative }
+\date{\today}
+\maketitle
+
+\begin{problems}
+    \item[1] 如果一个程序设计语言是通用的，那么它的编译程序或解释程序是否是通用的，为什么？
+     
+    \ans \textbf{不正确。}对于不同的计算机体系结构，通常需要针对不同的指令集（CISC, RISC等）采用不同的汇编代码生成器，以及在不同的操作系统（Windows, macOS, linux等）上需要使用能够在该操作系统上能够运行的编译器。而一个程序设计语言是通用的主要指文法通用，在不同的机器上有对应的编译器生成对应的目标代码。
+    \item[2] 借鉴编译器的移植构造思想说明 Java 语言是如何实现跨平台处理的。
+    
+    \ans 编译器的移植构造思想表明，我们只需要在目标机器上有编译器 $C^{M,A}_{A}$ ，就可以将 $C^{J,A}_{M}$ 通过上述编译器变为 $C^{J,A}_{A}$，即
+    \begin{equation*}
+        C^{J,A}_{M}\rightarrow \fbox{$C^{M,A}_{A}$}\rightarrow C^{J,A}_{A}
+    \end{equation*}
+
+    Java 程序（$J$）以 \textbf{Java 字节码}（$M$）的方式分发，然后在对应的机器上，要么被解释执行，要么被动态地（运行时）编译为本地代码（$A$），以跨平台处理。
+\end{problems}
+
+
+\end{document}

@@ -1,0 +1,26 @@
+\usetikzlibrary {automata,positioning}
+\begin{tikzpicture}[shorten >=1pt,node distance=2cm,on grid,auto]
+	\node[initial,state] (0) {0};
+	\node[state,right of=0] (1) {1};
+	\node[state,below right of=1] (2) {2};
+	\node[state,right of=2] (3) {3};
+	\node[state, above right of=3] (4) {4};
+	\node[state,right of=4] (5) {5};
+	\node[state,right of=5] (6) {6};
+	\node[state,right of=6] (7) {7};
+	\node[accepting,state,right of=7] (8) {8};
+	\draw (0) edge[->] node {$\epsilon$} (1)
+		%(1) edge[->] node {$\epsilon$} (2)
+		(1) edge[->] node {$\epsilon$} (2)
+		(2) edge[->] node {$a$} (3)
+		(1) edge[->] node {$\epsilon$} (4)
+		(3) edge[->] node {$\epsilon$} (4)
+		(4) edge[->] node {$\epsilon$} (5)
+		(5) edge[->] node {$b$} (6)
+		(6) edge[->] node {$\epsilon$} (7)
+		(7) edge[->] node {$\epsilon$} (8)
+		(6) edge[->,in=90,out=90] node {$\epsilon$} (5)
+		(4) edge[->,in=-120,out=-60] node {$\epsilon$} (7)
+		(7) edge[->,in=45,out=135] node {$\epsilon$} (1)
+		(0) edge[->,in=-140,out=-40] node {$\epsilon$} (8);
+\end{tikzpicture}

@@ -1,0 +1,88 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}     %先引入ctex
+\usepackage[utf8]{inputenc} %再引入inputenc
+\usepackage{graphicx}
+% \usepackage{lazylatex}
+% \tcbuselibrary{documentation}
+\usepackage{amsmath}
+\usepackage{bookmark}
+\usepackage{enumerate}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{forest}
+
+\graphicspath{{img/}}
+% 边距
+\geometry{left=2.0cm,right=2.0cm,top=2.0cm,bottom=3.0cm}
+% 大题
+\newenvironment{problems}{\begin{list}{}{\renewcommand{\makelabel}[1]{\textbf{##1}\hfil}}}{\end{list}}
+% 小题
+\newenvironment{steps}{\begin{list}{}{\renewcommand{\makelabel}[1]{##1.\hfil}}}{\end{list}}
+% 答
+\providecommand{\ans}{\textbf{答}:~}
+% 解
+\providecommand{\sol}{\textbf{解}.~}
+
+\begin{document}
+\title{\normalsize \underline{编译原理(A)}\\\LARGE第 2 次作业}
+\author{Log Creative }
+\date{\today}
+\maketitle
+
+\begin{problems}
+    \item[1] 写出不以 0 开头的奇数的上下文无关文法。
+    
+    \ans 
+    \begin{align*}
+        odd &\rightarrow  Z|XZ|XYZ \\
+        Z &\rightarrow \texttt{1|3|5|7|9}\\
+        X &\rightarrow Z|\texttt{2|4|6|8}\\
+        Y &\rightarrow YY\texttt{|0|}X\\
+    \end{align*}
+    \item[2] 设 $param$ 为 C++ 语言的实际参数，小写字母 a$\cdots$z 和数字 0$\cdots$9 可用的符号，参考例 2.3 和例 2.4 写出 C++ 函数调用的完整的上下文无关文法。
+    
+    \ans 
+    \begin{align*}
+        call &\rightarrow \textbf{id}(optparams)\\
+        optparams &\rightarrow params | \epsilon \\
+        params &\rightarrow params, param | param\\
+        \textbf{id} &\rightarrow L|LS\\
+        S &\rightarrow T|ST\\
+        T &\rightarrow L|D\\
+        L &\rightarrow \texttt{a|b|}\cdots\texttt{|z}\\
+        D &\rightarrow \texttt{0|1|2|3|4|5|6|7|8|9}
+    \end{align*}
+    \item[3] 构建一个语法制导翻译方案，该方案把算术表达式从中缀表示方法翻译成前缀表示方法，并给出 9-5+2 的注释分析树。
+    
+    \ans 
+    从中缀表示方法翻译成前缀表示的语法制导翻译方案：
+    \begin{align*}
+        expr \rightarrow& \text{ \{print(\texttt{'+'})\}}  &&expr_1 + term \\
+        expr \rightarrow& \text{ \{print(\texttt{'-'})\}}  &&expr_1 - term \\
+        expr \rightarrow& && term \\      
+        term \rightarrow& \text{ \{print(\texttt{'0'})\}}  && \texttt{0}\\
+        term \rightarrow& \text{ \{print(\texttt{'1'})\}}  && \texttt{1}\\
+                        & \cdots  && \\
+        term \rightarrow& \text{ \{print(\texttt{'9'})\}}  && \texttt{9}\\
+    \end{align*}
+
+    注释分析树：
+    \begin{figure}[h]
+        \centering
+        \begin{forest}
+        [\texttt{expr.t=+-952}
+            [\texttt{expr.t=-95}
+                [\texttt{expr.t=9}[\texttt{term.t=9}[\texttt{9}]]]
+                [\texttt{-}]
+                [\texttt{term.t=5}[\texttt{5}]]
+            ]
+            [\texttt{+}]
+            [\texttt{term.t=2}[\texttt{2}]]
+        ]
+    \end{forest}
+    \end{figure}
+    
+\end{problems}
+
+
+\end{document}

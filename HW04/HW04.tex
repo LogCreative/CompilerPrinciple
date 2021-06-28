@@ -1,0 +1,101 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}     %先引入ctex
+\usepackage[utf8]{inputenc} %再引入inputenc
+\usepackage{graphicx}
+% \usepackage{lazylatex}
+% \tcbuselibrary{documentation}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bookmark}
+\usepackage{enumerate}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{forest}
+\usepackage{float}
+\usetikzlibrary{automata,positioning}
+
+\graphicspath{{img/}}
+% 边距
+\geometry{left=2.0cm,right=2.0cm,top=1.0cm,bottom=3.0cm}
+% 大题
+\newenvironment{problems}{\begin{list}{}{\renewcommand{\makelabel}[1]{\textbf{##1}\hfil}}}{\end{list}}
+% 小题
+\newenvironment{steps}{\begin{list}{}{\renewcommand{\makelabel}[1]{##1)\hfil}}}{\end{list}}
+% 答
+\providecommand{\ans}{\textbf{答}:~}
+% 解
+\providecommand{\sol}{\textbf{解}.~}
+
+\begin{document}
+\title{\normalsize \underline{编译原理(A)}\\\LARGE第 4 次作业}
+\author{Log Creative }
+\date{\today}
+\maketitle
+
+\begin{problems}
+    \item[1] 为下列正则表达式或语言设计一个DFA或NFA
+    \begin{steps}
+        \item[1] $a(a|b)^*a$
+        
+        \ans 
+        \begin{figure}[H]
+            \input{img/nfa11.tex}
+        \end{figure}
+        
+        \item[2] $((\epsilon|a)b^*)^*$
+        
+        \ans 
+        \begin{figure}[H]
+            \input{img/nfa12.tex}
+        \end{figure}
+        
+        \item[3] $(a|b)^*a(a|b)(a|b)$
+        
+        \ans
+        \begin{figure}[H]
+            \input{img/dfa13.tex}
+        \end{figure}
+        \item[4] $a^*ba^*ba^*ba^*$
+        
+        \ans
+        \begin{figure}[H]
+            \input{img/dfa14.tex}
+        \end{figure}
+        \item[5] 所有由偶数个a和奇数个b构成的串
+        
+        \ans
+        \begin{figure}[H]
+            \input{img/dfa15.tex}
+        \end{figure}
+    \end{steps} 
+    \item[2] 给出下列两个NFA的转换表：
+    \begin{steps}
+        \item[1]
+        
+         \input{img/nfa1.tex}
+
+         \begin{tabular}{c|ccc}
+            状态 & $a$ & $b$ & $\epsilon$\\
+             \hline
+            0 & \{0,1\} & \{0\} & $\varnothing$\\
+            1 & \{1,2\} & \{1\} & $\varnothing$ \\
+            2 & \{2\} & \{2,3\} & \{0\} \\
+            3 & $\varnothing$ & $\varnothing$ & $\varnothing$
+         \end{tabular}
+        \item[2] 
+        
+         \input{img/nfa2.tex}
+
+         \begin{tabular}{c|ccc}
+            状态 & $a$ & $b$ & $\epsilon$\\
+             \hline
+            0 & \{1\} & $\varnothing$ & \{3\}\\
+            1 & $\varnothing$ & \{2\} & \{0\} \\
+            2 & $\varnothing$ & \{3\} & \{1\} \\
+            3 & $\varnothing$ & $\varnothing$ & \{0\}
+         \end{tabular}
+    \end{steps} 
+\end{problems}
+
+
+\end{document}

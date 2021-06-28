@@ -1,0 +1,119 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}     %先引入ctex
+\usepackage[utf8]{inputenc} %再引入inputenc
+\usepackage{graphicx}
+% \usepackage{lazylatex}
+% \tcbuselibrary{documentation}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bookmark}
+\usepackage{enumerate}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{forest}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{multicol}
+
+\usetikzlibrary{automata,positioning}
+
+\graphicspath{{img/}}
+% 边距
+\geometry{left=2.0cm,right=2.0cm,top=1.0cm,bottom=3.0cm}
+% 大题
+\newenvironment{problems}{\begin{list}{}{\renewcommand{\makelabel}[1]{\textbf{##1}\hfil}}}{\end{list}}
+% 小题
+\newenvironment{steps}{\begin{list}{}{\renewcommand{\makelabel}[1]{##1)\hfil}}}{\end{list}}
+% 答
+\providecommand{\ans}{\textbf{答}:~}
+% 解
+\providecommand{\sol}{\textbf{解}.~}
+
+\begin{document}
+\title{\normalsize \underline{编译原理(A)}\\\LARGE第 7 次作业}
+\author{Log Creative }
+\date{\today}
+\maketitle
+
+\begin{problems}
+    \item[1] 对于图 5-1 中的 SDD，给出下列表达式对应的注释语法分析树：(3+4)*(5+6)\textbf{n}
+    
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{ll}
+        \hline
+        产生式 & 语义规则 \\
+        \hline
+        1) $L\rightarrow E$\textbf{n} & $L.val=E.val$\\
+        2) $E\rightarrow E_1+T$ & $E.val=E_1.val+T.val$\\
+        3) $E\rightarrow T$ & $E.val=T.val$\\
+        4) $T\rightarrow T_1 * F$ & $T.val=T_1.val\times F.val$\\
+        5) $T\rightarrow F$ & $T.val=F.val$\\
+        6) $F\rightarrow (E)$ & $F.val=E.val$\\
+        7) $F\rightarrow $\textbf{digit} & $F.val=$\textbf{digit}.lexval \\
+        \hline
+    \end{tabular}
+    \end{table}
+
+    \sol 
+    \begin{figure}[H]
+        \centering
+        \input{img/comtree.tex}
+    \end{figure}
+
+    \item[2] 扩展图 5-4 中的 SDD，使它可以像图5-1所示的那样处理表达式
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{ll}
+            \hline
+            产生式 & 语义规则 \\
+            \hline
+            1) $T\rightarrow FT^\prime$ &
+                $T^\prime .inh=F.val$\\
+                & $T.val = T^\prime .syn$ \\
+            2) $T^\prime \rightarrow *FT_1^\prime$ & $T_1^\prime .inh=T^\prime .inh\times F.val$\\
+                & $T^\prime .syn=T_1^\prime .syn$\\
+            3) $T^\prime \rightarrow \epsilon$ & $T^\prime .syn = T^\prime .inh$\\
+            4) $F\rightarrow$\textbf{digit} & $F.val=$\textbf{digit}$.lexval$\\
+            \hline
+        \end{tabular} 
+    \end{table}
+
+    \sol 
+
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{ll}
+            \hline
+            产生式 & 语义规则 \\
+            \hline
+            1) $L\rightarrow E$\textbf{n} & $L.val=E.val$\\
+            2) $E\rightarrow TE^\prime$ & $E^\prime .inh = T.val$ \\
+            & $E.val=E^\prime .syn$\\
+            3) $E^\prime \rightarrow +TE_1^\prime$ & $E_1^\prime .inh = E^\prime .inh + T.val$\\
+            & $E^\prime .syn = E_1^\prime .syn$ \\
+            4) $E^\prime \rightarrow \epsilon$ & $E^\prime .syn = E^\prime .inh$\\
+            5) $T\rightarrow FT^\prime$ &
+                $T^\prime .inh=F.val$\\
+                & $T.val = T^\prime .syn$ \\
+            6) $T^\prime \rightarrow *FT_1^\prime$ & $T_1^\prime .inh=T^\prime .inh\times F.val$\\
+                & $T^\prime .syn=T_1^\prime .syn$\\
+            7) $T^\prime \rightarrow \epsilon$ & $T^\prime .syn = T^\prime .inh$\\
+            8) $F\rightarrow (E)$ & $F.val = E.val$\\
+            9) $F\rightarrow$\textbf{digit} & $F.val=$\textbf{digit}$.lexval$\\
+            \hline
+        \end{tabular} 
+    \end{table}
+
+    \newpage
+ 
+    \item[3] 使用你在上一题中得到的SDD，给出下列表达式对应的注释语法分析树：(3+4)*(5+6)\textbf{n}  
+    
+    \sol \begin{figure}[H]
+        \centering
+        \input{img/totree.tex}
+    \end{figure}
+\end{problems}
+
+\end{document}

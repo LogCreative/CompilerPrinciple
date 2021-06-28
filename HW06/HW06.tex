@@ -1,0 +1,197 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}     %先引入ctex
+\usepackage[utf8]{inputenc} %再引入inputenc
+\usepackage{graphicx}
+% \usepackage{lazylatex}
+% \tcbuselibrary{documentation}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bookmark}
+\usepackage{enumerate}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{forest}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{multicol}
+
+\usetikzlibrary{automata,positioning}
+
+\graphicspath{{img/}}
+% 边距
+\geometry{left=2.0cm,right=2.0cm,top=1.0cm,bottom=3.0cm}
+% 大题
+\newenvironment{problems}{\begin{list}{}{\renewcommand{\makelabel}[1]{\textbf{##1}\hfil}}}{\end{list}}
+% 小题
+\newenvironment{steps}{\begin{list}{}{\renewcommand{\makelabel}[1]{##1)\hfil}}}{\end{list}}
+% 答
+\providecommand{\ans}{\textbf{答}:~}
+% 解
+\providecommand{\sol}{\textbf{解}.~}
+
+\begin{document}
+\title{\normalsize \underline{编译原理(A)}\\\LARGE第 6 次作业}
+\author{Log Creative }
+\date{\today}
+\maketitle
+
+为下面的每一个文法设计一个预测分析器，要求给出FIRST和FOLLOW集合，并给出预测分析表。你可能先要对文法进行提取左公因子或消除左递归的操作。
+\begin{problems}
+    \item[1)] $S\rightarrow 0 S 1 | 0 1$ 和串 000111
+    
+    \begin{multicols}{2}
+    \sol 
+    提取左公因子：
+    \begin{align*}
+        S\rightarrow 0 S^\prime\\
+        S^\prime \rightarrow S1|1
+    \end{align*}
+
+    FIRST($S$) = \{0\}, FOLLOW($S$) = \{1,\$\}
+
+    FIRST($S^\prime$) = \{0,1\}, FOLLOW($S^\prime$) = \{\$\}
+
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        \multirow{2}{*}{非终结符号} & \multicolumn{3}{c|}{输入符号} \\
+        \cline{2-4}
+                         & 0      & 1      & \$     \\
+        \hline
+        $S$              & $S\rightarrow 0 S^\prime$ &        &        \\
+        $S^\prime$       & $S^\prime \rightarrow S1$       &  $S^\prime \rightarrow 1$      &  \\     
+        \hline
+    \end{tabular}
+
+    \begin{tabular}{|lr<{\$}r<{\$}l|}
+        \hline
+        已匹配   & 栈 & 输入 & 动作 \\
+        \hline
+        & $S$ & 000111 & \\
+        & $0S^\prime$ & 000111 & 输出 $S\rightarrow 0 S^\prime$\\
+        0       & $S^\prime$ & 00111 & 匹配 0 \\
+        0       & $S1$ & 00111 & 输出 $S^\prime \rightarrow S1$  \\
+        0       & $0S^\prime 1$ & 00111 & 输出 $S\rightarrow 0 S^\prime$  \\
+        00      & $S^\prime 1$ & 0111 & 匹配 0  \\
+        00      & $S11$ & 00111 & 输出 $S^\prime \rightarrow S1$  \\
+        00      & $0S^\prime 11$ & 00111 & 输出 $S\rightarrow 0 S^\prime$  \\
+        000     & $S^\prime 11$ & 111 & 匹配 0  \\
+        000     & $111$ & 111 & 输出  $S^\prime \rightarrow 1$  \\
+        0001    & $11$ & 11 & 匹配 1  \\
+        00011    & $1$ & 1 & 匹配 1  \\
+        000111    &  &  & 匹配 1  \\
+        \hline
+    \end{tabular}
+    \end{multicols}
+    \item[2)] $S\rightarrow + S S | * S S | a$ 和串 $+*aaa$
+    
+    
+    % \begin{multicols}{2}
+        \sol
+        FIRST($S$) = \{+,*,$a$\}, FOLLOW($S$) = \{+,*,$a$,\$\}
+    
+        \begin{tabular}{|c|c|c|c|c|}
+            \hline
+            \multirow{2}{*}{非终结符号} & \multicolumn{4}{c|}{输入符号} \\
+            \cline{2-5}
+                             & +      & *      & $a$ & \$     \\
+            \hline
+            $S$     & $S\rightarrow +SS$  & $S\rightarrow *SS$      &   $S\rightarrow a$& \\
+            \hline
+        \end{tabular}
+    
+        \begin{tabular}{|lr<{\$}r<{\$}l|}
+            \hline
+            已匹配   & 栈 & 输入 & 动作 \\
+            \hline
+            & $S$ & $+*aaa$ & \\
+            & $+SS$ & $+*aaa$ & 输出 $S\rightarrow +SS$\\
+            +& $SS$ & $*aaa$ & 匹配 + \\
+            +& $*SSS$ & $*aaa$ & 输出 $S\rightarrow *SS$\\
+            $+*$ & $SSS$ & $aaa$ &匹配 * \\
+            $+*$ & $aSS$ & $aaa$ & 输出 $S\rightarrow a$ \\
+            $+*a$ & $SS$ & $aa$ &匹配 $a$ \\
+            $+*a$ & $aS$ & $aa$ & 输出 $S\rightarrow a$ \\
+            $+*aa$ & $S$ & $a$ &匹配 $a$ \\
+            $+*aa$ & $a$ & $a$ & 输出 $S\rightarrow a$ \\
+            $+*aaa$ &  &  &匹配 $a$ \\
+            \hline
+        \end{tabular}
+    % \end{multicols}
+    
+    \item[4)] $S\rightarrow S + S | S S | ( S ) | S * | a$ 和串 $(a+a)*a$
+     
+    % \begin{multicols}{2}
+        \sol 提取左公因子：
+        \begin{align*}
+            S &\rightarrow SS^\prime | (S) | a \\
+            S^\prime &\rightarrow +S|S|*
+        \end{align*}
+        消除左递归：
+        \begin{align*}
+            S &\rightarrow \beta T\\
+            \beta &\rightarrow (S) | a\\
+            T &\rightarrow S^\prime T | \epsilon \\
+            S^\prime &\rightarrow +S|S|*
+        \end{align*}
+
+        FIRST($S$) = FIRST($\beta$) = \{(,$a$\}
+        
+        FIRST($T$) = \{+,(,$a$,*,$\epsilon$\} 
+        
+        FIRST($S^\prime$) = \{+,(,$a$,*\}
+
+        FOLLOW($S$) = FOLLOW($T$) =\{),\$\}
+        
+        FOLLOW($\beta$) = FOLLOW($S^\prime$) = \{+,(,$a$,*,$\epsilon$\} 
+
+        \begin{tabular}{|c|c|c|c|c|c|c|}
+            \hline
+            \multirow{2}{*}{非终结符号} & \multicolumn{6}{c|}{输入符号} \\
+            \cline{2-7}
+                             & +   & $a$ & $*$ & ( & ) & \$     \\
+            \hline
+            $S$         &  & $S \rightarrow \beta T$ & &$S \rightarrow \beta T$ & & \\
+            $\beta$     &  & $\beta \rightarrow a$ & & $\beta \rightarrow (S)$ & & \\
+            $T$         &  $T \rightarrow S^\prime T$ & $T \rightarrow S^\prime T$ & $T \rightarrow S^\prime T$ & $T \rightarrow S^\prime T$ &$T \rightarrow \epsilon$ & $T \rightarrow \epsilon$ \\
+            $S^\prime$  &  $S^\prime \rightarrow +S$ & $S^\prime \rightarrow S$ & $S^\prime \rightarrow *$ & $S^\prime \rightarrow S$ & &  \\
+            \hline
+        \end{tabular}
+
+        \begin{tabular}{|lr<{\$}r<{\$}l|}
+            \hline
+            已匹配   & 栈 & 输入 & 动作 \\
+            \hline
+             & $S$& $(a+a)*a$& \\
+             & $\beta T$& $(a+a)*a$& 输出 $S \rightarrow \beta T$\\
+             & $(S)T$& $(a+a)*a$& 输出 $\beta \rightarrow (S)$\\
+            ( & $S)T$ & $a+a)*a$& 匹配 (\\
+            ( & $\beta T)T$ & $a+a)*a$&输出 $S \rightarrow \beta T$\\
+            ( & $aT)T$ & $a+a)*a$&输出 $\beta \rightarrow a$\\
+            $(a$ & $T)T$ & $+a)*a$&匹配 $a$\\
+            $(a$ & $S^\prime T)T$ & $+a)*a$&输出 $T \rightarrow S^\prime T$\\
+            $(a$ & $+ST)T$ & $+a)*a$&输出 $S^\prime \rightarrow +S$\\
+            $(a+$ & $ST)T$ & $a)*a$&匹配 +\\
+            $(a+$ & $\beta TT)T$ & $a)*a$&输出 $S \rightarrow \beta T$\\
+            $(a+$ & $a TT)T$ & $a)*a$&输出 $\beta \rightarrow a$\\
+            $(a+a$ & $TT)T$ & $)*a$&匹配 $a$\\
+            $(a+a$ & $T)T$ & $)*a$&输出 $\epsilon$\\
+            $(a+a$ & $)T$ & $)*a$&输出 $\epsilon$\\
+            $(a+a)$ & $T$ & $*a$&匹配 )\\
+            $(a+a)$ & $S^\prime T$ & $*a$&输出 $T \rightarrow S^\prime T$\\
+            $(a+a)$ & $* T$ & $*a$&输出 $S^\prime\rightarrow *$\\
+            $(a+a)*$ & $T$ & $a$&匹配 $*$\\
+            $(a+a)*$ & $S^\prime T$ & $a$&输出 $T \rightarrow S^\prime T$\\
+            $(a+a)*$ & $S T$ & $a$&输出 $S^\prime \rightarrow S$\\
+            $(a+a)*$ & $\beta T T$ & $a$&输出 $S\rightarrow \beta T$\\
+            $(a+a)*$ & $a T T$ & $a$&输出 $\beta \rightarrow a$\\
+            $(a+a)*a$ & $ T T$ & &匹配 $a$\\
+            $(a+a)*a$ & $  T$ & &输出 $\epsilon$\\
+            $(a+a)*a$ &  & &输出 $\epsilon$\\
+            \hline
+        \end{tabular}
+        
+    % \end{multicols}
+
+\end{problems}
+\end{document}

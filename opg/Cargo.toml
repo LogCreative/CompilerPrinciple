@@ -1,9 +1,0 @@
-[package]
-name = "opg"
-version = "1.1.0"
-authors = ["LogCreative <logcreative-lzl@sjtu.edu.cn>"]
-edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]

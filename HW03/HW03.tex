@@ -1,0 +1,109 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[UTF8]{ctex}     %先引入ctex
+\usepackage[utf8]{inputenc} %再引入inputenc
+\usepackage{graphicx}
+% \usepackage{lazylatex}
+% \tcbuselibrary{documentation}
+\usepackage{amsmath}
+\usepackage{bookmark}
+\usepackage{enumerate}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{forest}
+
+\graphicspath{{img/}}
+% 边距
+\geometry{left=2.0cm,right=2.0cm,top=2.0cm,bottom=3.0cm}
+% 大题
+\newenvironment{problems}{\begin{list}{}{\renewcommand{\makelabel}[1]{\textbf{##1}\hfil}}}{\end{list}}
+% 小题
+\newenvironment{steps}{\begin{list}{}{\renewcommand{\makelabel}[1]{##1)\hfil}}}{\end{list}}
+% 答
+\providecommand{\ans}{\textbf{答}:~}
+% 解
+\providecommand{\sol}{\textbf{解}.~}
+
+\begin{document}
+\title{\normalsize \underline{编译原理(A)}\\\LARGE第 3 次作业}
+\author{Log Creative }
+\date{\today}
+\maketitle
+
+\begin{problems}
+    \item[3.3.2] 试描述下列正则表达式定义的语言：
+    \begin{steps}
+        \item[1] $\mathbf{a(a|b)^*a}$
+         
+        \ans 表示语言以$a$开头和结尾、中间为零个或多个$a$或$b$的实例构成的串的集合。
+        \begin{equation*}
+            \{aa,aaa,aba,aaaa,aaba,abaa,abba,aaaaa,\cdots\}
+        \end{equation*}
+        \item[2] $\mathbf{((\epsilon|a)b^*)^*}$ 
+        
+        \ans $\mathbf{((\epsilon|a)b^*)^*}=(\{\epsilon,a,b,ab,bb,abb,bbb,abbb,\cdots\})^*$表示由零个或多个$b$的实例、被零个或多个$a$分割构成的串的集合。换言之，就是$\mathbf{(a|b)^*}$，也就是由零个或多个$a$或$b$的实例构成的串的集合。
+        \begin{equation*}
+            \{\epsilon,a,b,aa,bb,abb,bab,bba,aab,baa,aaa,\cdots\}
+        \end{equation*}
+        \item[3] $\mathbf{(a|b)^*a(a|b)(a|b)}$
+        
+        \ans 表示由三个或多个$a$或$b$、且倒数第3位必须是$a$构成的串的集合。
+        \begin{equation*}
+            \{aaa,aba,abb,aab,aaaa,aaba,aabb,aaab,baaa,baba,babb,baab,aaaaa,\cdots\}
+        \end{equation*}
+        \item[4] $\mathbf{a^*ba^*ba^*ba^*}$
+        
+        \ans 表示由零个或多个$a$、被3个$b$插入构成的串的集合。
+        \begin{equation*}
+            \{bbb,abbb,babb,bbab,bbba,aabbb,\cdots\}
+        \end{equation*}
+        \item[5] $\mathbf{(aa|bb)^*((ab|ba)(aa|bb)^*(ab|ba)(aa|bb)^*)^*}$ 
+        
+        \ans $\mathbf{(aa|bb)^*((ab|ba)(aa|bb)^*(ab|ba)(aa|bb)^*)^*}=\mathbf{(aa|bb)^*(((ab|ba)(aa|bb)^*)^{\rm 2})^*}$ 表示由零个或多个$aa$或$bb$、被偶数个$ab$或$ba$插入构成的串的集合。
+    \end{steps} 
+    \item[3.3.3] 试说明在一个长度为$n$的字符串中，分别有多少个
+    \begin{steps}
+        \item[1] 前缀 \ans $n+1$个 
+        \item[2] 后缀 \ans $n+1$个
+        \item[3] 真前缀 \ans $n-1$个
+        \item[4] 字串 \ans 
+        从第一个字符开始计数，计算到达尾部的位置的个数，最后加上空串$\epsilon$：
+        \begin{equation*}
+            1+\sum_{i=1}^n (n-i+1) =1+\frac{(n+1)n}{2}=\frac{n^2+n+2}{2}
+        \end{equation*} 
+    \end{steps}
+    \item[3.3.5] 试写出下列语言的正则定义：
+    \begin{steps}
+        \item[1] 包含5个元音的所有小写字符串，这些串中的元音按顺序出现。
+        
+        \ans 答案由$seq_1$表示
+        \begin{align*}
+            nv&\rightarrow \texttt{[b-df-hj-np-tv-z]}\\
+            seq_1&\rightarrow (nv|\texttt{a})^*\texttt{a}(nv|\texttt{e})^*\texttt{e}(nv|\texttt{i})^*\texttt{i}(nv|\texttt{o})^*\texttt{o}(nv|\texttt{u})^*\texttt{u}nv^*
+        \end{align*}
+        \item[2] 所有由按词典序递增序排列的小写字母组成的串。
+        
+        \ans $\texttt{a}^*\texttt{b}^*\cdots\texttt{z}^*$
+        \item[3] 注释，即/*和*/之间的串，且串中没有不在双引号(\texttt{"})中的*/。
+        
+        \ans 答案由$seq_3$表示
+        \begin{align*}
+            nq&\rightarrow \Sigma-\{\texttt{"}\}\\
+            q&\rightarrow \texttt{"}nq^*\texttt{"}\\
+            ns&\rightarrow \Sigma-\{\texttt{",*}\}\\
+            nss&\rightarrow \Sigma-\{\texttt{",*,/}\}\\
+            comment&\rightarrow q|ns|*^+(nss|q)\\
+            stars&\rightarrow \texttt{*}^*\\
+            seq_3&\rightarrow stars~comment^*~stars
+        \end{align*}
+        \item[6] 所有由偶数个$a$和奇数个$b$构成的串。 
+        
+        \ans 答案由$seq_6$表示
+        \begin{align*}
+            odd&\rightarrow ((aa)^*(bb)^*)^*\\
+            seq_6&\rightarrow b~odd|odd~b
+        \end{align*}
+    \end{steps} 
+\end{problems}
+
+
+\end{document}
